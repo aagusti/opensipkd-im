@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="/static/img/favicon.png">
+
+    <title tal:content="request.title" />
+
+    <!-- Bootstrap core CSS -->
+    <link href="/deform_static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/deform_static/css/form.css" rel="stylesheet">
+    <link href="/deform_static/css/typeahead.css" rel="stylesheet">
+
+    <link href="/static/css/navbar-fixed-top.css" rel="stylesheet">
+    <link href="/static/css/theme.css" rel="stylesheet">
+    <link href="/static/datatables/extensions/TableTools/css/dataTables.tableTools.min.css" rel="stylesheet">
+    <link href="/static/datatables/media/css/dataTables.bootstrap.css" rel="stylesheet"> 
+	
+    <link href="/static/js/pickadate/themes/classic.css" rel="stylesheet">
+    <link href="/static/js/pickadate/themes/classic.date.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="/static/css/osipkd.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/home">OpenSIPKD-IM</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="dropdown" tal:attributes="class request.matched_route.name in ['imgw-message'] and 'active'">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">IM <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/imgw/message">Pesan</a></li>
+                <li><a href="/imgw/message/add">Kirim pesan</a></li>
+                <li><a href="/imgw/broadcast">Broadcast</a></li>                
+                <li><a href="/imgw/broadcast/file">Kirim broadcast</a></li>
+              </ul>
+            </li>                        
+
+            <li class="dropdown" tal:attributes="class request.matched_route.name in ['imgw-parser'] and 'active'">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Parser <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/parse/cfg">Konfigurasi</a></li>
+                <li><a href="/parse/msg">Parsed SMS</a></li>
+                <li><a href="/parse/rnd">Random Winner</a></li>
+                </ul>
+            </li>   
+            
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Modem <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/imgw/agent">Agent</a></li>
+                <li><a href="/conf">Konfigurasi</a></li>
+              </ul>
+            </li>
+
+            <li class="dropdown" tal:attributes="class request.matched_route.name in ['user', 'user-add', 'user-edit', 'user-delete', 'group', 'group-add', 'group-edit', 'group-delete'] and 'active'">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/user">User</a></li>                
+                <li><a href="/group">Group</a></li>                
+                <li><a href="/routes">Route</a></li>           
+                <li><a href="/user/group">User Groups</a></li>                
+                <li><a href="/group/routes">Group Permission</a></li>   
+              </ul>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav pull-right">  
+            <li class="dropdown" tal:attributes="class request.path in ['/password'] and 'active'">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Akun<b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/logout">${request.user.nice_username()} Keluar</a></li>
+                <li><a href="/password">Ubah Kata Sandi</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div class="container">
+    
+      <div tal:condition="request.session.peek_flash()">
+        <div class="alert alert-success" tal:repeat="message request.session.pop_flash()">${message}</div>
+      </div>
+      <div tal:condition="request.session.peek_flash('error')">
+        <div class="alert alert-danger" tal:repeat="message request.session.pop_flash('error')">${message}</div>
+      </div>
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript" src="/deform_static/scripts/jquery-2.0.3.min.js"></script>
+    <script type="text/javascript" src="/deform_static/scripts/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/deform_static/scripts/deform.js"></script>    
+    <script type="text/javascript" src="/deform_static/scripts/jquery.maskedinput-1.3.1.min.js"></script>    
+    <script type="text/javascript" src="/deform_static/scripts/modernizr.custom.input-types-and-atts.js"></script>
+    <script type="text/javascript" src="/static/js/pickadate/picker.js"></script>
+    <script type="text/javascript" src="/static/js/pickadate/picker.date.js"></script>
+    <script type="text/javascript" src="/static/datatables/media/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="/static/datatables/media/js/dataTables.bootstrap.js"></script>
+    <script type="text/javascript" src="/static/datatables/media/js/jquery.dataTables.ext.js"></script>
+    <script type="text/javascript" src="/deform_static/scripts/typeahead.min.js"></script>   
+
+    
+      <div metal:define-slot="content"></div>    
+
+    </div> <!-- /container -->
+
+    <div metal:define-slot="scripts"></div>    
+  </body>
+</html>

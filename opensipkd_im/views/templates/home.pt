@@ -1,0 +1,24 @@
+<html metal:use-macro="load: base.pt">
+<div metal:fill-slot="content">
+
+<!-- Main component for a primary marketing message or call to action -->
+<div class="well">
+<h1>Pajak Reklame</h1>
+<p><img src="/static/img/logo_kota_bogor.png" class="img-float img-thumbnail"/>
+Selamat datang di aplikasi <code>Pajak Reklame</code>, Aplikasi ini menggunakan
+<a href="http://pylonsproject.org/">Pyramid</a> Web Framework dan 
+<a href="http://postgresql.org/">Postgresql</a> Database.</p>
+
+<p>Aplikasi <code>Pajak Reklame</code> ini digunakan untuk mengelola pajak reklame yang digunakan pada dinas dengan mempunyai fitur utama :
+<br>
+<ul>
+   <li> Objek Pajak Reklame</li>
+   <li> Transaksi Pajak</li>
+</ul>
+</p>
+<p>Dalam hal ini pajak reklame hanya memasukan serta mengelola data Reklame dan Transaksi Pajak.
+</p>
+</div><!--well-->
+
+</div>
+</html>
