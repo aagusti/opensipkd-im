@@ -88,7 +88,7 @@ def get_title(request):
     route_name = request.matched_route.name
     return titles[route_name]
 
-main_title = 'Internet Messanger'
+main_title = 'IM'
 titles = {}
 
 
@@ -124,6 +124,7 @@ def main(global_config, **settings):
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_static_view('deform_static', 'deform:static')
     config.add_static_view('files', settings['static_files'])    
+    config.add_renderer('csv', '.tools.CSVRenderer')
 
     routes = DBSession.query(Route.kode, Route.path, Route.nama).all()
     for route in routes:

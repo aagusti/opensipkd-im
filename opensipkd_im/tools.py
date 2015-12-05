@@ -300,3 +300,35 @@ class UploadFiles(SaveFile):
             output_file.write(data)
         output_file.close()
         return fullpath        
+
+import xlrd
+import io
+import csv, codecs, cStringIO
+from email.utils import parseaddr            
+
+class CSVRenderer(object):
+   def __init__(self, info):
+      pass
+
+   def __call__(self, value, system):
+      """ Returns a plain CSV-encoded string with content-type
+      ``text/csv``. The content-type may be overridden by
+      setting ``request.response.content_type``."""
+
+      request = system.get('request')
+      if request is not None:
+         response = request.response
+         ct = response.content_type
+         if ct == response.default_content_type:
+            response.content_type = 'text/csv'
+
+      fout = io.BytesIO() #StringIO()
+      fcsv = csv.writer(fout, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL) #MINIMAL)
+      #fcsv = UnicodeWriter(fout, delimiter=',', quotechar=',', quoting=csv.QUOTE_MINIMAL)
+      #print value.get('header', [])
+      fcsv.writerow(value.get('header', []))
+      fcsv.writerows(value.get('rows', []))
+
+      return fout.getvalue()    
+      
+        

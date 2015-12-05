@@ -125,6 +125,8 @@ def main(global_config, **settings):
     config.add_static_view('deform_static', 'deform:static')
     config.add_static_view('files', settings['static_files'])    
 
+    config.add_renderer('csv', '.tools.CSVRenderer')
+
     routes = DBSession.query(Route.kode, Route.path, Route.nama).all()
     for route in routes:
         config.add_route(route.kode, route.path)

@@ -1,4 +1,4 @@
-<html metal:use-macro="load: ../base.pt">
+<html metal:use-macro="load: ../../templates/base.pt">
 <div metal:fill-slot="content">
 
 <div class="panel panel-danger">
@@ -6,7 +6,7 @@
         <h3 class="panel-title">Warning</h3>
     </div>
     <div class="panel-body">
-        Delete user ID #${row.id} ${row.email} ?
+        Batalkan Msg ID #${row.id} ${row.field02} ?
     </div>
 </div>
 

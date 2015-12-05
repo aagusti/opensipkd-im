@@ -55,6 +55,7 @@
           "bFilter"        : true,
           "bAutoWidth"     : false,
           "bPaginate"      : true,
+           "order": [[ 0, "desc" ]],
           "sPaginationType": "full_numbers",
           
           "lengthMenu": [
@@ -83,11 +84,12 @@
 
         var tb_array = [
           '<div class="btn-group pull-left">',
-          '	<button id="btn_add"    class="btn btn btn-primary" type="button">Tambah</button>',
-          '	<button id="btn_edit"   class="btn btn btn-primary" type="button">Edit</button>',
-          '	<button id="btn_delete" class="btn btn btn-danger"  type="button">Hapus</button>',
-          '	<button id="btn_csv"  class="btn btn btn-primary" type="button">CSV</button>',
+          '	<!--button id="btn_add"    class="btn btn btn-primary" type="button">Tambah</button>',
+          '	<button id="btn_edit"   class="btn btn btn-primary" type="button">Edit</button-->',
+          '	<button id="btn_delete" class="btn btn btn-danger"  type="button">Cancel</button>',
           '	<button id="btn_close"  class="btn btn btn-warning" type="button">Tutup</button>',
+          '	<button id="btn_csv"  class="btn btn btn-primary" type="button">CSV</button>',
+          '	<label>&nbsp; Tanggal: <input type="date" id="dt_filter"  class="input-sm"></label>',
           '	&nbsp;',
           '</div>',
         ];
@@ -127,13 +129,25 @@
         });
 
         $('#btn_csv').click(function () {
-            window.location = oTableUrl+'csv/act';
+            window.location = oTableUrl+'csv?tgl='+$("#dt_filter").val();
 			  });
 
         $("#btn_close").click(function () {
             window.location = '/home';
             return false;
         });
+        
+        $("#dt_filter").pickadate(
+            { "selectMonths": true, 
+              "submitFormat": "yyyy-mm-dd", 
+              "selectYears": true, 
+              "format": "yyyy-mm-dd"}
+            );
+        $("#dt_filter").change(function () {
+            val = $("#dt_filter").val();
+            $("input[type='search']").val( val );
+            oTable.fnFilter( val );
+            });
         })
     </script>
 </div>

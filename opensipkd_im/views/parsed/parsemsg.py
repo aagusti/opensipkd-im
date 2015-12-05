@@ -21,7 +21,8 @@ from ...models.parser import (
 from ...tools import dict_to_str
     
 from datatables import ColumnDT, DataTables
-
+from ...views.tools import _DTstrftime, _number_format
+from datetime import date,time, datetime, timedelta
 
 SESS_ADD_FAILED = 'parse-msg add failed'
 SESS_EDIT_FAILED = 'parse-msg edit failed'
@@ -48,7 +49,7 @@ def view_act(request):
     if url_dict['act']=='grid':
         columns = []
         columns.append(ColumnDT('id'))
-        columns.append(ColumnDT('field01')) #tgl
+        columns.append(ColumnDT('field01', filter=_DTstrftime)) #tgl
         columns.append(ColumnDT('field02')) #cmd
         columns.append(ColumnDT('field03')) #nama
         columns.append(ColumnDT('field04'))
@@ -62,48 +63,21 @@ def view_act(request):
         query = DBSession.query(SmsParsed)
         rowTable = DataTables(req, SmsParsed, query, columns)
         return rowTable.output_result()    
+        
+    elif url_dict['act']=='csv':
+        pass
+        
     return
     
 #######    
 # Add #
 #######
 def email_validator(node, value):
-    name, email = parseaddr(value)
-    if not email or email.find('@') < 0:
-        raise colander.Invalid(node, 'Invalid email format')
+    pass
 
 def form_validator(form, value):
-    def err_email():
-        raise colander.Invalid(form,
-            'Email %s already used by parse-msg ID %d' % (
-                value['email'], found.id))
-
-    def err_name():
-        raise colander.Invalid(form,
-            'User name %s already used by ID %d' % (
-                value['parse-msg_name'], found.id))
-                
-    if 'id' in form.request.matchdict:
-        uid = form.request.matchdict['id']
-        q = DBSession.query(User).filter_by(id=uid)
-        row = q.first()
-    else:
-        row = None
-    q = DBSession.query(User).filter_by(email=value['email'])
-    found = q.first()
-    if row:
-        if found and found.id != parse-msg.id:
-            err_email()
-    elif found:
-        err_email()
-    if 'parse-msg_name' in value: # optional
-        found = User.get_by_name(value['parse-msg_name'])
-        if parse-msg:
-            if found and found.id != parse-msg.id:
-                err_name()
-        elif found:
-            err_name()
-
+    pass
+    
 @colander.deferred
 def deferred_status(node, kw):
     values = kw.get('daftar_status', [])
@@ -114,22 +88,6 @@ STATUS = (
     (0, 'Inactive'),
     )    
     
-class Int(colander.Int):
-    def deserialize(self, value):
-        print 'deser---------------->', value
-        if value is not None:
-            return super(IntegerNone, self).deserialize(value)
-
-    def serialize(self, node, appstruct):
-        print '0-------------------------->'
-        result = super(Int, self).serialize(node, appstruct)
-        print '1-------------------------->', result
-        if result is not colander.null:
-            result = int(result)
-        else:
-            result = 1
-        return result
-        
 class AddSchema(colander.Schema):
     field01 = colander.SchemaNode(
                     colander.String(),
@@ -151,13 +109,14 @@ class AddSchema(colander.Schema):
                     colander.String(),
                     title = "Unique Message",)
     field07 = colander.SchemaNode(
-                    Int(),
-                    missing = colander.null,
+                    colander.Integer(),
+                    default = 0,
+                    missing = colander.drop,
                     title = "Number of Content",)
                     
     field08 = colander.SchemaNode(
-                    Int(),
-                    widget=deferred_status, 
+                    colander.Integer(),
+                    default = 0,
                     missing=None,
                     title = "Active",)
                     
@@ -262,14 +221,51 @@ def view_delete(request):
     if not row:
         return id_not_found(request)
         
-    form = Form(colander.Schema(), buttons=('delete','cancel'))
+    form = Form(colander.Schema(), buttons=('proses','cancel'))
     if request.POST:
-        if 'delete' in request.POST:
-            msg = 'Message ID %d %s berhasil dihapus.' % (row.id, row.cmd)
-            q.delete()
+        if 'proses' in request.POST:
+            msg = 'Message Parsed ID %d %s berhasil dibatalkan.' % (row.id, row.field02)
+            row.field11 = 2 #delete()
+            DBSession.add(row)
             DBSession.flush()
             request.session.flash(msg)
         return route_list(request)
     return dict(row=row,
                  form=form.render())
 
+##########
+# Delete #
+##########    
+@view_config(route_name='parse-msg-csv', renderer='csv',
+             permission='parse-msg-csv')
+def export_csv(request):
+    controls = dict(request.GET.items())
+    
+    q = DBSession.query(SmsParsed.field01,SmsParsed.field02,SmsParsed.field03,
+                        SmsParsed.field04,SmsParsed.field05,SmsParsed.field06,)
+    if 'tgl' in controls and controls['tgl']:
+        tgl2 = (datetime.strptime(controls['tgl'],'%Y-%m-%d')+timedelta(days=1)).strftime('%Y-%m-%d')
+        q = q.filter(SmsParsed.field01>=controls['tgl'], SmsParsed.field01<tgl2)
+        
+    r = q.first()
+    
+    if r:
+        header = r.keys()
+        query = q.all()
+        rows = []
+        for item in query:
+            rows.append(list(item))
+
+        # override attributes of response
+        filename = 'parsedmsg%s.csv' % datetime.now().strftime('%Y%m%d%H%M%S')
+
+        request.response.content_disposition = 'attachment;filename=' + filename
+
+        return {
+              'header': header,
+              'rows': rows,
+            }
+    return {
+              'header': ['none'],
+              'rows': ['none'],
+            }      

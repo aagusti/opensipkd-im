@@ -342,17 +342,6 @@ def session_failed(request, session_name):
              permission='parse-rnd-add')
 def view_add(request):
     
-    if request.POST and request.POST.items():
-        print 'POST'
-        controls = dict(request.POST.items())
-    else:
-        print 'GET'
-        controls = dict(request.GET.items())
-    print controls
-    print '---------------------->'
-    row = DBSession.query(SmsParsed).filter_by(id=controls['id']).first()
-    if not row:
-        return id_not_found(request)
     form = get_form(request, EditSchema)
     if request.POST:
         if 'proses' in request.POST:
@@ -367,6 +356,15 @@ def view_add(request):
         return route_list(request)
     elif SESS_ADD_FAILED in request.session:
         return session_failed(request, SESS_ADD_FAILED)
+
+    if request.POST and request.POST.items():
+        controls = dict(request.POST.items())
+    else:
+        controls = dict(request.GET.items())
+        
+    row = DBSession.query(SmsParsed).filter_by(id=controls['id']).first()
+    if not row:
+        return id_not_found(request)
     values = row.to_dict()
     values.update(controls)
     values['date_from'] = values['date_from'] and datetime.strptime(values['date_from'],'%Y-%m-%d') or None

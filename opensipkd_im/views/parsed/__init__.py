@@ -112,22 +112,6 @@ STATUS = (
     (0, 'Inactive'),
     )    
     
-class Int(colander.Int):
-    def deserialize(self, value):
-        print 'deser---------------->', value
-        if value is not None:
-            return super(IntegerNone, self).deserialize(value)
-
-    def serialize(self, node, appstruct):
-        print '0-------------------------->'
-        result = super(Int, self).serialize(node, appstruct)
-        print '1-------------------------->', result
-        if result is not colander.null:
-            result = int(result)
-        else:
-            result = 1
-        return result
-        
 class AddSchema(colander.Schema):
     field01 = colander.SchemaNode(
                     colander.String(),
@@ -149,14 +133,15 @@ class AddSchema(colander.Schema):
                     colander.String(),
                     title = "Unique Message",)
     field07 = colander.SchemaNode(
-                    Int(),
+                    colander.Integer(),
+                    default = 0,
                     missing = colander.null,
                     title = "Number of Content",)
                     
     field08 = colander.SchemaNode(
-                    Int(),
+                    colander.String(),
                     widget=deferred_status, 
-                    missing=None,
+                    missing= colander.null,
                     title = "Active",)
                     
 class EditSchema(AddSchema):
@@ -244,7 +229,9 @@ def view_edit(request):
     elif SESS_EDIT_FAILED in request.session:
         return session_failed(request, SESS_EDIT_FAILED)
     values = row.to_dict()
-    #values = dict_to_str(values)
+    values['field07'] = values['field07'] and values['field07'] or 0
+    values['field08'] = values['field08'] and values['field08'] or 0
+    
     return dict(form=form.render(appstruct=values))
     #form.set_appstruct(values)
     #return dict(form=form)
