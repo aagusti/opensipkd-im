@@ -58,10 +58,10 @@ setup(name='opensipkd_im',
       zip_safe=False,
       install_requires=requires,
       tests_require=requires,
-      test_suite="opensipkd-im",
+      test_suite="opensipkd_im",
       entry_points = """\
       [paste.app_factory]
-      main = opensipkd-im:main
+      main = opensipkd_im:main
       [console_scripts]
       initialize_opensipkd_im_db = opensipkd_im.scripts.initializedb:main      
       """,
