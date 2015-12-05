@@ -32,7 +32,7 @@
             ${structure:field.serialize()}
           </div>
         </div> 
-        <h2 class="form-signin-heading"><center>Pajak Reklame</center></h2>
+        <h2 class="form-signin-heading"><center>OpenSIPKD-IM</center></h2>
         <!--username -------------------------------> 
         <input id="username" class="form-control" type="text" value="" name="username" placeholder="Username">
         <!--password ------------------------------->

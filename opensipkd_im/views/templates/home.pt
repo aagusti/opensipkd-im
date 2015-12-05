@@ -3,20 +3,23 @@
 
 <!-- Main component for a primary marketing message or call to action -->
 <div class="well">
-<h1>Pajak Reklame</h1>
+<h1>OpenSIPKD-IM</h1>
 <p><img src="/static/img/logo_kota_bogor.png" class="img-float img-thumbnail"/>
-Selamat datang di aplikasi <code>Pajak Reklame</code>, Aplikasi ini menggunakan
+Selamat datang di aplikasi <code>OpenSIPKD-IM</code>, Aplikasi ini menggunakan
 <a href="http://pylonsproject.org/">Pyramid</a> Web Framework dan 
 <a href="http://postgresql.org/">Postgresql</a> Database.</p>
 
-<p>Aplikasi <code>Pajak Reklame</code> ini digunakan untuk mengelola pajak reklame yang digunakan pada dinas dengan mempunyai fitur utama :
+<p>Aplikasi <code>Opensipkd-IM</code> ini digunakan untuk mengelola SMS yang mempunyai fitur utama :
 <br>
 <ul>
-   <li> Objek Pajak Reklame</li>
-   <li> Transaksi Pajak</li>
+   <li> Management Modem</li>
+   <li> Kirim SMS by number</li>
+   <li> Kirim SMS Broadcast</li>
+   <li> Randomoize SMS by Parser </li>
+   
 </ul>
 </p>
-<p>Dalam hal ini pajak reklame hanya memasukan serta mengelola data Reklame dan Transaksi Pajak.
+<p>(c) <a href="http://opensipkd.com">OpenSIPKD  2015 </a>
 </p>
 </div><!--well-->
 
