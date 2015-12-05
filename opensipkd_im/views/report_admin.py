@@ -13,7 +13,7 @@ import colander
 from deform import (Form, widget, ValidationFailure, )
     
 from datatables import ColumnDT, DataTables
-from ..views.base_view import _DTstrftime
+#from ..views.base_view import _DTstrftime
 
 from pyjasper import (JasperGenerator)
 from pyjasper import (JasperGeneratorWithSubreport)

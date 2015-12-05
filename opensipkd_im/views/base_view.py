@@ -33,4 +33,4 @@ def _number_format(chain):
     if ret:
         return ret
     else:
-        return chain     
+        return chain   

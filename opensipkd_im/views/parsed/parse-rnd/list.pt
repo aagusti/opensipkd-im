@@ -1,3 +1,5 @@
+
+
 <html metal:use-macro="load: ../../templates/base.pt">
 
 <div metal:fill-slot="content">
@@ -8,14 +10,15 @@
         <tr>
             <th>ID</th>
             <th>Tanggal</th>
-            <th>Pengirim</th>
+            <th>Notes 1</th>
+            <th>Notes 2</th>
+            <th>Recv Tgl.</th>
+            <th>Sender</th>
             <th>Field 03</th>
             <th>Field 04</th>
             <th>Field 05</th>
             <th>Field 06</th>
             <th>Field 07</th>
-            <th>Field 08</th>
-            <th>Field 09</th>
             <th>Flag</th>
         </tr>
     </thead>
@@ -29,7 +32,7 @@
       var mThn;
       var oTable;
       var iPos;
-      var oTableUrl = "/parse/msg/";
+      var oTableUrl = "/parse/rnd/";
       Number.prototype.formatMoney = function(decPlaces, thouSeparator, decSeparator) {
         var n = this,
             decPlaces = isNaN(decPlaces = Math.abs(decPlaces)) ? 2 : decPlaces,
@@ -77,14 +80,19 @@
               null,
               null,
               null,
+              null,
               {"width": "50px", "sClass":"center"},
           ]
         });
-
+          
+        
         var tb_array = [
           '<div class="btn-group pull-left">',
-          '	<button id="btn_add"    class="btn btn btn-primary" type="button">Tambah</button>',
+          '	<button id="btn_par"    class="btn btn btn-primary" type="button">Randomize</button>',
+          '	<!--button id="btn_add"    class="btn btn btn-primary" type="button">Tambah</button-->',
           '	<button id="btn_edit"   class="btn btn btn-primary" type="button">Edit</button>',
+          '	<button id="btn_approve"  class="btn btn btn-primary" type="button">Appprove</button>',
+          '	<button id="btn_cancel"  class="btn btn btn-primary" type="button">Cancel</button>',
           '	<button id="btn_delete" class="btn btn btn-danger"  type="button">Hapus</button>',
           '	<button id="btn_csv"  class="btn btn btn-primary" type="button">CSV</button>',
           '	<button id="btn_close"  class="btn btn btn-warning" type="button">Tutup</button>',
@@ -112,6 +120,10 @@
             }
         });
         
+        $('#btn_par').click(function () {
+            window.location = oTableUrl+'par';
+        });
+        
         $('#btn_add').click(function () {
             window.location = oTableUrl+'add';
         });
@@ -121,6 +133,16 @@
             else alert('Pilih Baris yang akan di edit');
         });
 
+        $('#btn_cancel').click(function () {
+            if (mID) window.location = oTableUrl+mID+'/cancel';
+            else alert('Pilih Baris yang akan di batalkan');
+        });
+        
+        $('#btn_approve').click(function () {
+            if (mID) window.location = oTableUrl+mID+'/approve';
+            else alert('Pilih Baris yang akan di setujui');
+        });
+        
         $('#btn_delete').click(function () {
             if (mID) window.location = oTableUrl+mID+'/delete';
             else alert('Pilih Baris yang akan di hapus');

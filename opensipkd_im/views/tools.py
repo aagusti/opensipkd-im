@@ -1,4 +1,5 @@
 import colander
+from datetime import datetime
 from deform import (
     Form,
     ValidationFailure,
@@ -44,4 +45,18 @@ def deferred_dati2(node, kw):
     values = kw.get('daftar_dati2', [])
     return widget.SelectWidget(values=values)
     
-    
+def _DTstrftime(chain):
+    ret = chain and datetime.strftime(chain, '%d-%m-%Y')
+    if ret:
+        return ret
+    else:
+        return chain
+        
+def _number_format(chain):
+    import locale
+    locale.setlocale(locale.LC_ALL, 'id_ID.utf8')
+    ret = locale.format("%d", chain, grouping=True)
+    if ret:
+        return ret
+    else:
+        return chain        

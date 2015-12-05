@@ -19,7 +19,7 @@ from . import (
     DefaultModel,
     DBSession,
     )
-    
+from sqlalchemy.orm import relationship, backref    
 
 class SmsCmd(Base, DefaultModel):
     __tablename__ = 'smscmd'
@@ -39,7 +39,7 @@ class SmsParsed(Base, DefaultModel):
                          nullable=False,
                          server_default=func.current_timestamp())  
     field02 = Column(String(160)) #sender
-    field03 = Column(String(160))
+    field03 = Column(String(160)) #cmd
     field04 = Column(String(160))
     field05 = Column(String(160))
     field06 = Column(String(160))
@@ -55,6 +55,11 @@ class SmsWinner(Base, DefaultModel):
     field01 = Column(DateTime(True),
                          nullable=False,
                          server_default=func.current_timestamp())  
-    smsparsed_id = Column(BigInteger, ForeignKey("smsparser.id"))
+    smsparsed_id = Column(BigInteger, ForeignKey("smsparsed.id"))
     field02 = Column(String(160))
     field03 = Column(String(160))
+    smsparsed = relationship(SmsParsed, backref=backref('smswinner'))
+    field04 = Column(SmallInteger, nullable=False, default=0)
+    
+    #relationship('ModemPengirim', backref='im.modem_pengirim', order_by='ModemPengirim.produk') 
+    
