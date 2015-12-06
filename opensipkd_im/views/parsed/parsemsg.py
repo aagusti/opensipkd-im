@@ -33,7 +33,6 @@ SESS_EDIT_FAILED = 'parse-msg edit failed'
 @view_config(route_name='parse-msg', renderer='parse-msg/list.pt',
              permission='parse-msg')
 def view_list(request):
-    jqueryui.need()
     return dict(project='OpenSIPKD IM')
     
 ##########                    
