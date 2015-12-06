@@ -167,7 +167,7 @@ $(document).ready(function () {
   });
 
   $("#btn_close").click(function () {
-      window.location = '/reklame';
+      window.location = '/';
       return false;
   });
   
