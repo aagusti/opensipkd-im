@@ -24,8 +24,6 @@ from datatables import ColumnDT, DataTables
 from ...views.tools import _DTstrftime, _number_format
 from datetime import date,time, datetime, timedelta
 
-from js.jqueryui import jqueryui
-
 SESS_ADD_FAILED = 'parse-msg add failed'
 SESS_EDIT_FAILED = 'parse-msg edit failed'
 
