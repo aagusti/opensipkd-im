@@ -50,6 +50,7 @@ def user_act(request):
         columns.append(ColumnDT('status'))
         columns.append(ColumnDT('last_login_date'))
         columns.append(ColumnDT('registered_date'))
+        columns.append(ColumnDT('id'))
         
         query = DBSession.query(User)
         rowTable = DataTables(req, User, query, columns)
@@ -263,22 +264,27 @@ def view_edit(request):
 @view_config(route_name='user-delete', renderer='templates/user/delete.pt',
              permission='user-delete')
 def view_delete(request):
-    q = query_id(request)
-    row = q.first()
-    if not row:
+    id = request.matchdict['id'].split(',')
+    print '-----------------', id
+    q = DBSession.query(User).filter(User.id.in_(id))
+    #q = query_id(request)
+    rows = q.all()
+    if not rows:
         return id_not_found(request)
-    if row.id==1 and request.user.id>1 :
+    if '1' in id:
         request.session.flash('User tidak mempunyai hak akses menghapus data user admin', 'error')
         return route_list(request)
 		
     form = Form(colander.Schema(), buttons=('delete','cancel'))
     if request.POST:
         if 'delete' in request.POST:
-            msg = 'User ID %d %s berhasil dihapus.' % (row.id, row.email)
-            q.delete()
+            for row in rows:
+                msg = 'User ID %d %s berhasil dihapus.' % (row.id, row.email)
+                q = DBSession.query(User).filter_by(id=row.id).delete()
+                request.session.flash(msg)
             DBSession.flush()
-            request.session.flash(msg)
+            
         return route_list(request)
-    return dict(row=row,
+    return dict(rows,
                  form=form.render())
 

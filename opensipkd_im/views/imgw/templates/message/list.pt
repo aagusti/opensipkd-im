@@ -119,5 +119,14 @@ ${rows.pager(format='$link_previous ~2~ $link_next')}
 
 <a href="/imgw/message/add" class="btn">Kirim pesan</a>
 </div>
-
+<div metal:fill-slot="scripts">
+<script>
+  $(document).ready(function () {
+      $("#awal,#akhir").datepicker({
+          "dateFormat" : 'dd-mm-yy'
+          }
+      );
+  });
+</script>
+</div>
 </html>

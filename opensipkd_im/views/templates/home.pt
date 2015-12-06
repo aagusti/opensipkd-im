@@ -9,7 +9,7 @@ Selamat datang di aplikasi <code>OpenSIPKD-IM</code>, Aplikasi ini menggunakan
 <a href="http://pylonsproject.org/">Pyramid</a> Web Framework dan 
 <a href="http://postgresql.org/">Postgresql</a> Database.</p>
 
-<p>Aplikasi <code>Opensipkd-IM</code> ini digunakan untuk mengelola SMS yang mempunyai fitur utama :
+<p>Aplikasi <code>OpenSIPKD-IM</code> ini digunakan untuk mengelola SMS yang mempunyai fitur utama :
 <br>
 <ul>
    <li> Management Modem</li>

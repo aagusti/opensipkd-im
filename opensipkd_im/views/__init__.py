@@ -26,9 +26,9 @@ from ..models import (
 ########
 # Home #
 ########
-@view_config(route_name='home', renderer='templates/home.pt', permission='home')
+@view_config(route_name='home', renderer='templates/home.pt', permission='view')
 def view_home(request):
-    return dict(project='Pajak Reklame')
+    return dict(project='OpenSIPKD-IM')
 
 
 #########
@@ -87,7 +87,7 @@ def view_login(request):
     return dict(form=form)
     #return dict(form=form.render())
 
-@view_config(route_name='logout')
+@view_config(route_name='logout',permission='view')
 def view_logout(request):
     headers = forget(request)
     return HTTPFound(location = request.route_url('home'),
@@ -117,7 +117,7 @@ def password_validator(form, value):
                                           
 
 @view_config(route_name='password', renderer='templates/password.pt',
-             permission='password')
+             permission='view')
 def view_password(request):
     schema = Password(validator=password_validator)
     form = Form(schema, buttons=('simpan','batal'))
@@ -137,7 +137,7 @@ def view_password(request):
             transaction.commit()
             #request.session.flash('Your password has been changed.')
             request.session.flash('Password telah berhasil dirubah.')
-        return HTTPFound(location=request.route_url('reklame'))
+        return HTTPFound(location=request.route_url('home'))
     elif 'invalid password' in request.session:
         r = dict(form=request.session['invalid password'])
         del request.session['invalid password']

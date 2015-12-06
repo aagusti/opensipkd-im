@@ -6,12 +6,13 @@
 <table id="table1" class="table ">
     <thead>
         <tr>
-            <th>ID</th>
+            <th><input type="checkbox" value="1" id="checkAll" name="checkAll"></th>
             <th>Email</th>
             <th>User Name</th>
             <th>Status</th>
             <th>Last Login</th>
             <th>Registered Date</th>
+            <th>Act</th>
         </tr>
     </thead>
     <tbody>
@@ -20,115 +21,241 @@
 </div>
   <div metal:fill-slot="scripts">
     <script>
-      var mID;
-      var mThn;
-      var oTable;
-      var iPos;
-      var oTableUrl = "/user/grid/act";
-      Number.prototype.formatMoney = function(decPlaces, thouSeparator, decSeparator) {
-        var n = this,
-            decPlaces = isNaN(decPlaces = Math.abs(decPlaces)) ? 2 : decPlaces,
-            decSeparator = decSeparator == undefined ? "." : decSeparator,
-            thouSeparator = thouSeparator == undefined ? "," : thouSeparator,
-            sign = n < 0 ? "-" : "",
-            i = parseInt(n = Math.abs(+n || 0).toFixed(decPlaces)) + "",
-            j = (j = i.length) > 3 ? j % 3 : 0;
-        return sign + (j ? i.substr(0, j) + thouSeparator : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thouSeparator) + (decPlaces ? decSeparator + Math.abs(n - i).toFixed(decPlaces).slice(2) : "");
-      };
+var mID;
+var mThn;
+var oTable;
+var iPos;
+var oTableUrl = "/user/";
+var rows_selected = [];  
 
-        
-      $(document).ready(function () {
-        oTable = $('#table1').dataTable({
-          "sDom"           : '<"toolbar">lfrtip',
-          "sAjaxSource"    : oTableUrl,
-          "bStateSave"     : true,
-          "bServerSide"    : true,
-          "bProcessing"    : true,
-          "bScrollCollapse": true,
-          "bSort"          : true,
-          "bInfo"          : false,
-          "bFilter"        : true,
-          "bAutoWidth"     : false,
-          "bPaginate"      : true,
-          "sPaginationType": "full_numbers",
-          
-          "lengthMenu": [
-              [10, 25, 50, 100],
-              [10, 25, 50, 100]
+/*************************************************************************************************/
+// Updates "Select all" control in a data table
+/*************************************************************************************************/
+function updateDataTableSelectAllCtrl(table){
+   var $table             = table.table().node();
+   var $chkbox_all        = $('tbody input[type="checkbox"]', $table);
+   var $chkbox_checked    = $('tbody input[type="checkbox"]:checked', $table);
+   var chkbox_select_all  = $('thead input[name="checkAll"]', $table).get(0);
+
+   // If none of the checkboxes are checked
+   if($chkbox_checked.length === 0){
+      chkbox_select_all.checked = false;
+      if('indeterminate' in chkbox_select_all){
+         chkbox_select_all.indeterminate = false;
+      }
+
+   // If all of the checkboxes are checked
+   } else if ($chkbox_checked.length === $chkbox_all.length){
+      chkbox_select_all.checked = true;
+      if('indeterminate' in chkbox_select_all){
+         chkbox_select_all.indeterminate = false;
+      }
+
+   // If some of the checkboxes are checked
+   } else {
+      chkbox_select_all.checked = true;
+      if('indeterminate' in chkbox_select_all){
+         chkbox_select_all.indeterminate = true;
+      }
+   }
+}
+
+$(document).ready(function () {
+    oTable = $('#table1').DataTable({
+        "sDom"           : '<"toolbar">lfrtip',
+        "sAjaxSource"    : oTableUrl+'grid/act',
+        "bStateSave"     : true,
+        "bServerSide"    : true,
+        "bProcessing"    : true,
+        "bScrollCollapse": true,
+        "bSort"          : true,
+        "bInfo"          : false,
+        "bFilter"        : true,
+        "bAutoWidth"     : false,
+        "bPaginate"      : true,
+        "sPaginationType": "full_numbers",
+        "order": [[ 1, "asc" ]],
+       
+        "lengthMenu": [
+            [10, 25, 50, 100],
+            [10, 25, 50, 100]
           ],
-          "aoColumnDefs": [{
-                        "bSearchable": false,
-                        "bVisible": false,
-                        "aTargets": [0]
-                    }],
-          "aoColumns": [
-              null,
-              {"width": "120px"},
-              null,
-              {"width": "50px", "sClass":"center"},
-              {"width": "200px", "sClass":"left"},
-              {"width": "200px", "sClass":"left"},
-          ]
-        });
+        "aoColumnDefs": [{
+            'aTargets': 0,
+            'bSearchable': false,
+            'bSortable': false,
+            'className': 'dt-body-center',
+            'render': function (data, type, full, meta){
+                return '<input type="checkbox">';
+                }
+            },{
+            'aTargets': 6,
+            'bSearchable': false,
+            'bSortable': false,
+            'className': 'dt-body-center',
+            'render': function (data, type, full, meta){
+                var rowId = data[0];
+                return '<input type="button" value="Edit" class="btn" value="'+rowId+'">';
+                }
+            },
+            ],
           
-        var tb_array = [
-          '<div class="btn-group pull-left">',
-          '	<button id="btn_add"    class="btn btn btn-primary" type="button">Tambah</button>',
-          '	<button id="btn_edit"   class="btn btn btn-primary" type="button">Edit</button>',
-          '	<button id="btn_delete" class="btn btn btn-danger"  type="button">Hapus</button>',
-          '	<button id="btn_print"  class="btn btn btn-primary" type="button">Cetak</button>',
-          '	<button id="btn_close"  class="btn btn btn-warning" type="button">Tutup</button>',
-          '	&nbsp;',
-          '</div>',
-        ];
+        "aoColumns": [
+            {"width": "30px", "sClass":"center"},
+            {"width": "120px"},
+            null,
+            {"width": "50px", "sClass":"center"},
+            {"width": "200px", "sClass":"left"},
+            {"width": "200px", "sClass":"left"},
+            {"width": "60px", "sClass":"center"},
+          ],
+        'rowCallback': function(row, data, dataIndex){
+             // Get row ID
+             var rowId = data[0];
+             // If row ID is in the list of selected row IDs
+             if($.inArray(rowId, rows_selected) !== -1){
+                $(row).find('input[type="checkbox"]').prop('checked', true);
+                $(row).addClass('selected');
+             }
+          }
+    });
 
+  /*************************************************************************************************/
+  // Button Handle
+  /*************************************************************************************************/
+  var tb_array = [
+    '<div class="btn-group pull-left">',
+    '	<button id="btn_add"    class="btn btn btn-primary" type="button">Tambah</button>',
+    '	<!--button id="btn_edit"   class="btn btn btn-primary" type="button">Edit</button-->',
+    '	<button id="btn_delete" class="btn btn btn-danger"  type="button">Hapus</button>',
+    '	<button id="btn_print"  class="btn btn btn-primary" type="button">Cetak</button>',
+    '	<button id="btn_close"  class="btn btn btn-warning" type="button">Tutup</button>',
+    '	&nbsp;',
+    '</div>',
+  ];
 
-        var tb = tb_array.join(' ');
-        $("div.toolbar").html(tb);
-        $("div.toolbar").attr('style', 'display:block; float: left; margin-bottom:6px; line-height:16px;');
-        $('#table1 tbody').on('click', 'tr', function () {
-            if ($(this).hasClass('selected')) {
-                $(this).removeClass('selected');
-            } else {
-                iPos = oTable.fnGetPosition(this);
-                var aData = oTable.fnGetData(iPos);
-                //mID = aData[0];
-                oTable.$('tr.selected').removeClass('selected');
-                $(this).addClass('selected');
-                mID = aData[0];
-                        oTable.$('tr.row_selected').removeClass('row_selected');
-                        $(this).addClass('row_selected');
-                        /*oTable2.fnReloadAjax("egaji/grid2?id=" + mID);*/                
-            }
-        });
+  var tb = tb_array.join(' ');
+  $("div.toolbar").html(tb);
+  $("div.toolbar").attr('style', 'display:block; float: left; margin-bottom:6px; line-height:16px;');
+
+  $('#btn_add').click(function () {
+      window.location = '/user/add';
+  });
+  
+  $('#table1 tbody').on('click', 'input[type="button"]', function(e){
+    var $row = $(this).closest('tr');
+    var data = oTable.row($row).data();
+    var rowId = data[0];
+    window.location = oTableUrl+rowId+'/edit';
+    e.stopPropagation();
+  });
+
+  $('#btn_delete').click(function () {
+    if (rows_selected.length>0){
+        window.location = oTableUrl+rows_selected+'/delete';
+        //rows_selected = [];
+        //$('#table1 tbody input[type="checkbox"]:checked').trigger('click');
+    }
+    else alert('Pilih Baris yang akan di export');
+
+  });
+
+  $('#btn_print').click(function () {
+      url = '/admin/report/act/user?user='+mID
+      if (mID) window.open(url);
+      else window.open('/admin/report/act/user2');
+  });
+
+  $("#btn_close").click(function () {
+      window.location = '/reklame';
+      return false;
+  });
+  
+  /*************************************************************************************************/
+  // Change Selected Or Not
+  /*************************************************************************************************/
+  /*$('#table1 tbody').on('click', 'tr', function () {
+      if ($(this).hasClass('selected')) {
+          $(this).removeClass('selected');
+      } else {
+          iPos = oTable.fnGetPosition(this); //error
+          var aData = oTable.fnGetData(iPos);
+          //mID = aData[0];
+          oTable.$('tr.selected').removeClass('selected');
+          $(this).addClass('selected');
+          mID = aData[0];
+          oTable.$('tr.row_selected').removeClass('row_selected');
+          $(this).addClass('row_selected');
+      }
+  });*/
+    
+  /*************************************************************************************************/
+  // Updates "Select all" control in a data table
+  /*************************************************************************************************/
+  $("#checkAll").click(function () {
+    $('#table1 tbody input[type="checkbox"]').prop('checked', this.checked);
+  });
+
+  $('#table1 tbody').on('click', 'input[type="checkbox"]', function(e){
+
+    var $row = $(this).closest('tr');
+
+    // Get row data error
+    var data = oTable.row($row).data();
+
+    // Get row ID
+    var rowId = data[0];
+
+    // Determine whether row ID is in the list of selected row IDs 
+    var index = $.inArray(rowId, rows_selected);
+
+    // If checkbox is checked and row ID is not in list of selected row IDs
+    if(this.checked && index === -1){
+       rows_selected.push(rowId);
+
+    // Otherwise, if checkbox is not checked and row ID is in list of selected row IDs
+    } else if (!this.checked && index !== -1){
+       rows_selected.splice(index, 1);
+    }
+
+    if(this.checked){
+       $row.addClass('selected');
+    } else {
+       $row.removeClass('selected');
+    }
+
+    // Update state of "Select all" control
+    updateDataTableSelectAllCtrl(oTable);
+
+    // Prevent click event from propagating to parent
+    e.stopPropagation();
+  });
+
+  // Handle click on table cells with checkboxes
+  $('#table1').on('click', 'tbody td, thead th:first-child', function(e){
+    $(this).parent().find('input[type="checkbox"]').trigger('click');
+  });
+
+  // Handle click on "Select all" control
+  $('#table1 thead input[name="checkAll"]').on('click', function(e){
+    if(this.checked){
+       $('#table1 tbody input[type="checkbox"]:not(:checked)').trigger('click');
+    } else {
+       $('#table1 tbody input[type="checkbox"]:checked').trigger('click');
+    }
+
+    // Prevent click event from propagating to parent
+    e.stopPropagation();
+  });
+
+  // Handle table draw event
+  oTable.on('draw', function(){
+    // Update state of "Select all" control
+    updateDataTableSelectAllCtrl(oTable);
+  });
+});
+         
         
-        $('#btn_add').click(function () {
-            window.location = '/user/add';
-        });
-
-        $('#btn_edit').click(function () {
-            if (mID) window.location = '/user/'+mID+'/edit';
-            else alert('Pilih Baris yang akan di edit');
-        });
-
-        $('#btn_delete').click(function () {
-            if (mID) window.location = '/user/'+mID+'/delete';
-            else alert('Pilih Baris yang akan di hapus');
-        });
-
-        $('#btn_print').click(function () {
-            url = '/admin/report/act/user?user='+mID
-			
-			if (mID) window.open(url);
-            else window.open('/admin/report/act/user2');
-            
-        });
-
-        $("#btn_close").click(function () {
-            window.location = '/reklame';
-            return false;
-        });
-        })
     </script>
 </div>
 
