@@ -121,7 +121,8 @@
     <script type="text/javascript" src="/deform_static/scripts/modernizr.custom.input-types-and-atts.js"></script>
     <script type="text/javascript" src="/static/js/pickadate/picker.js"></script>
     <script type="text/javascript" src="/static/js/pickadate/picker.date.js"></script>
-    <script type="text/javascript" src="/deform_static/scripts/typeahead.min.js"></script-->   
+    -->
+    <script type="text/javascript" src="/deform_static/scripts/typeahead.min.js"></script>   
 
     
       <div metal:define-slot="content"></div>    
