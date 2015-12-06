@@ -65,7 +65,7 @@ def get_rows(p):
     
 @view_config(route_name='imgw-broadcast',
              renderer='templates/broadcast/list.pt',
-             permission='edit_broadcast')
+             permission='imgw-broadcast')
 def view_list(request):
     p = dict()
     if request.POST:
@@ -94,7 +94,7 @@ def view_list(request):
 
 @view_config(route_name='imgw-broadcast-penerima',
              renderer='templates/broadcast/penerima.pt',
-             permission='edit_broadcast')
+             permission='imgw-broadcast-penerima')
 def view_list_penerima(request):
     bcast_id = request.matchdict['id']
     q = DBSession.query(Broadcast).filter_by(id=request.matchdict['id'])
@@ -138,7 +138,7 @@ def get_form(schema_cls):
 
 @view_config(route_name='imgw-broadcast-file',
              renderer='templates/broadcast/file.pt',
-             permission='edit_broadcast')
+             permission='imgw-broadcast-file')
 def view_file(request):
     form = get_form(AddSchema)
     if request.POST:

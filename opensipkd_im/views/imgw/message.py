@@ -132,7 +132,7 @@ def get_rows(p):
     
 @view_config(route_name='imgw-message',
              renderer='templates/message/list.pt',
-             permission='edit_message')
+             permission='imgw-message')
 def view_list(request):
     p = dict()
     if request.POST:
@@ -261,7 +261,7 @@ SESS_ADD_FAILED = 'imgw message add failed'
 
 @view_config(route_name='imgw-message-add',
              renderer='templates/message/add.pt',
-             permission='edit_message')
+             permission='imgw-message-add')
 def view_add(request):
     form = get_form(request)
     if request.POST:
@@ -345,7 +345,7 @@ def save_resend(row, request):
     
 @view_config(route_name='imgw-message-resend',
              renderer='templates/message/resend.pt',
-             permission='edit_message')
+             permission='imgw-message-resend')
 def view_resend(request):
     row = ImSelesai.get_by_id(request.matchdict['id'])
     if not row:

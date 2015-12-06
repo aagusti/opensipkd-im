@@ -36,7 +36,7 @@ from ...tools import (
 ########
 @view_config(route_name='imgw-agent',
              renderer='templates/agent/list.pt',
-             permission='edit_agent')
+             permission='imgw-agent')
 def view_list(request):
     rows = DBSession.query(Agent).order_by('jalur', 'id')
     count = rows.count()
@@ -173,7 +173,7 @@ class EditModemSchema(AddModemSchema):
 ###################
 @view_config(route_name='imgw-agent-add',
              renderer='templates/agent/add.pt',
-             permission='edit_agent')
+             permission='imgw-agent-add')
 def view_add(request):
     cls = AddModemSchema
     form = get_agent_form(request, cls)
@@ -205,7 +205,7 @@ def id_not_found(request):
     
 @view_config(route_name='imgw-agent-edit',
              renderer='templates/agent/edit.pt',
-             permission='edit_agent')
+             permission='imgw-agent-edit')
 def view_edit(request):
     row = query_id(request).first()
     if not row:
@@ -242,7 +242,7 @@ def view_edit(request):
 ##########
 @view_config(route_name='imgw-agent-delete',
              renderer='templates/agent/delete.pt',
-             permission='edit_agent')
+             permission='imgw-agent-delete')
 def view_agent_delete(request):
     q = query_id(request)
     row = q.first()
