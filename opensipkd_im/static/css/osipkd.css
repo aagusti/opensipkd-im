@@ -176,3 +176,17 @@ div.tab-content {
   -ms-user-select: none;
   user-select: none;
 }
+
+.yadcf-filter {
+	padding-right: 1px !important; 
+	padding-left: 1px !important;
+	padding-bottom: 1px !important;
+	padding-top: 1px !important;
+}
+
+.yadcf-filter-wrapper {
+	display: inline-block;
+	white-space: nowrap;
+	margin-left: 1px !important;
+}
+

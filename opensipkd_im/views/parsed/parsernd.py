@@ -50,7 +50,7 @@ def view_act(request):
     if url_dict['act']=='grid':
         columns = []
         columns.append(ColumnDT('id'))
-        columns.append(ColumnDT('field01', filter = _DTstrftime)) #tgl
+        columns.append(ColumnDT('field01', filter = _DTstrftime, search_like='%s%%')) #tgl
         columns.append(ColumnDT('field02')) #notes1
         columns.append(ColumnDT('field03')) #notes2
         columns.append(ColumnDT('smsparsed.field01', filter = _DTstrftime)) #sender
@@ -482,4 +482,48 @@ def view_approve(request):
         return route_list(request)
     return dict(row=row,
                  form=form.render())
-                 
+
+##########
+# csv #
+##########    
+@view_config(route_name='parse-rnd-csv', renderer='csv',
+             permission='parse-rnd-csv')
+def export_csv(request):
+    controls = dict(request.GET.items())
+    
+    q = DBSession.query(SmsWinner.field01.label('WinDate'), SmsWinner.field02.label('WinNotes1'), 
+                        SmsWinner.field03.label('WinNotes2'), SmsWinner.field04.label('WinStatus'),  
+                        SmsParsed.field00.label('RecvID'), SmsParsed.field01.label('RecvDate'), 
+                        SmsParsed.field02.label('Sender'), SmsParsed.field03.label('RecvCmd'),
+                        SmsParsed.field04, SmsParsed.field05, SmsParsed.field06, SmsParsed.field07).\
+                  join(SmsParsed, SmsWinner.smsparsed_id==SmsParsed.id)
+    if 'tgl' in controls and controls['tgl']:
+        tgl2 = (datetime.strptime(controls['tgl'],'%Y-%m-%d')+timedelta(days=1)).strftime('%Y-%m-%d')
+        q = q.filter(SmsWinner.field01>=controls['tgl'], SmsWinner.field01<tgl2)
+    
+    if 'cmd' in controls and controls['cmd']:
+        q = q.filter(SmsParsed.field03==controls['cmd'])
+        
+        
+    r = q.first()
+    
+    if r:
+        header = r.keys()
+        query = q.all()
+        rows = []
+        for item in query:
+            rows.append(list(item))
+
+        # override attributes of response
+        filename = 'parsedmsg%s.csv' % datetime.now().strftime('%Y%m%d%H%M%S')
+
+        request.response.content_disposition = 'attachment;filename=' + filename
+
+        return {
+              'header': header,
+              'rows': rows,
+            }
+    return {
+              'header': ['none'],
+              'rows': ['none'],
+            }                       

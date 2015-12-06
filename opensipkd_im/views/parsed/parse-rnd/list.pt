@@ -22,11 +22,46 @@
             <th>Flag</th>
         </tr>
     </thead>
+    <tfoot>
+        <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+    </tfoot>
     <tbody>
     </tbody>
 </table>
 </div>
   <div metal:fill-slot="scripts">
+    <style>
+    #yadcf-filter--table1-1 {
+        width: 70px !important;
+        max-width: 70px !important;
+    }
+    #yadcf-filter--table1-2{
+        width: 100px !important;
+        max-width: 100px !important;
+    }
+    #yadcf-filter--table1-3{
+        width: 100px !important;
+        max-width: 100px !important;
+    }
+    #yadcf-filter--table1-6{
+        width: 50px !important;
+        max-width: 50px !important;
+    }    
+    </style>
+      
     <script>
       var mID;
       var mThn;
@@ -84,7 +119,23 @@
               {"width": "50px", "sClass":"center"},
           ]
         });
-          
+        
+        oTable.yadcf([
+        {
+          column_number: 0
+        },
+        {
+          column_number: 1,
+          filter_type: "date",
+          date_format:  'yyyy-mm-dd',
+          filter_type_options:{width:"50px"}
+        },
+        {
+          column_number: 6,
+          filter_type: "text",
+          filter_delay: 500
+        }
+        ], 'footer');  
         
         var tb_array = [
           '<div class="btn-group pull-left">',
@@ -149,7 +200,8 @@
         });
 
         $('#btn_csv').click(function () {
-            window.location = oTableUrl+'csv/act';
+            window.location = oTableUrl+'csv?tgl='+$("#yadcf-filter--table1-1").val()+
+                              '&cmd='+$("#yadcf-filter--table1-6").val();
 			  });
 
         $("#btn_close").click(function () {

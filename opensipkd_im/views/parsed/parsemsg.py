@@ -24,6 +24,8 @@ from datatables import ColumnDT, DataTables
 from ...views.tools import _DTstrftime, _number_format
 from datetime import date,time, datetime, timedelta
 
+from js.jqueryui import jqueryui
+
 SESS_ADD_FAILED = 'parse-msg add failed'
 SESS_EDIT_FAILED = 'parse-msg edit failed'
 
@@ -33,6 +35,7 @@ SESS_EDIT_FAILED = 'parse-msg edit failed'
 @view_config(route_name='parse-msg', renderer='parse-msg/list.pt',
              permission='parse-msg')
 def view_list(request):
+    jqueryui.need()
     return dict(project='OpenSIPKD IM')
     
 ##########                    
@@ -49,15 +52,14 @@ def view_act(request):
     if url_dict['act']=='grid':
         columns = []
         columns.append(ColumnDT('id'))
-        columns.append(ColumnDT('field01', filter=_DTstrftime)) #tgl
-        columns.append(ColumnDT('field02')) #cmd
-        columns.append(ColumnDT('field03')) #nama
+        columns.append(ColumnDT('field01', filter=_DTstrftime, search_like='%s%%')) #tgl
+        columns.append(ColumnDT('field00')) #receiver
+        columns.append(ColumnDT('field02')) #sender
+        columns.append(ColumnDT('field03')) #cmd
         columns.append(ColumnDT('field04'))
         columns.append(ColumnDT('field05'))
         columns.append(ColumnDT('field06'))
         columns.append(ColumnDT('field07'))
-        columns.append(ColumnDT('field08'))
-        columns.append(ColumnDT('field09'))
         columns.append(ColumnDT('field11'))
         
         query = DBSession.query(SmsParsed)
@@ -234,18 +236,28 @@ def view_delete(request):
                  form=form.render())
 
 ##########
-# Delete #
+# csv #
 ##########    
 @view_config(route_name='parse-msg-csv', renderer='csv',
              permission='parse-msg-csv')
 def export_csv(request):
     controls = dict(request.GET.items())
     
-    q = DBSession.query(SmsParsed.field01,SmsParsed.field02,SmsParsed.field03,
-                        SmsParsed.field04,SmsParsed.field05,SmsParsed.field06,)
+    q = DBSession.query(SmsParsed.field00, SmsParsed.field01, SmsParsed.field02, SmsParsed.field03,
+                        SmsParsed.field04, SmsParsed.field05, SmsParsed.field06, SmsParsed.field07)
+    if 'recv' in controls and controls['recv']:
+        q = q.filter(SmsParsed.field00==controls['recv'])
+        
     if 'tgl' in controls and controls['tgl']:
         tgl2 = (datetime.strptime(controls['tgl'],'%Y-%m-%d')+timedelta(days=1)).strftime('%Y-%m-%d')
         q = q.filter(SmsParsed.field01>=controls['tgl'], SmsParsed.field01<tgl2)
+    
+    if 'sender' in controls and controls['sender']:
+        q = q.filter(SmsParsed.field02==controls['sender'])
+    
+    if 'cmd' in controls and controls['cmd']:
+        q = q.filter(SmsParsed.field03==controls['cmd'])
+        
         
     r = q.first()
     

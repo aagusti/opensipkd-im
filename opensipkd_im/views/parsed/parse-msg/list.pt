@@ -8,22 +8,55 @@
         <tr>
             <th>ID</th>
             <th>Tanggal</th>
+            <th>Penerima</th>
             <th>Pengirim</th>
             <th>Field 03</th>
             <th>Field 04</th>
             <th>Field 05</th>
             <th>Field 06</th>
             <th>Field 07</th>
-            <th>Field 08</th>
-            <th>Field 09</th>
             <th>Flag</th>
         </tr>
     </thead>
+    <tfoot>
+        <tr>
+            <th>ID</th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+    </tfoot>
+        
     <tbody>
     </tbody>
 </table>
 </div>
   <div metal:fill-slot="scripts">
+    <style>
+    #yadcf-filter--table1-1 {
+        width: 70px !important;
+        max-width: 70px !important;
+    }
+    #yadcf-filter--table1-2{
+        width: 100px !important;
+        max-width: 100px !important;
+    }
+    #yadcf-filter--table1-3{
+        width: 100px !important;
+        max-width: 100px !important;
+    }
+    #yadcf-filter--table1-4{
+        width: 50px !important;
+        max-width: 50px !important;
+    }    
+    </style>
+    
     <script>
       var mID;
       var mThn;
@@ -43,6 +76,11 @@
 
         
       $(document).ready(function () {
+        /*$('#table1 tfoot th').each( function () {
+            var title = $(this).text();
+            $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+        } );
+    */
         oTable = $('#table1').dataTable({
           "sDom"           : '<"toolbar">lfrtip',
           "sAjaxSource"    : oTableUrl+'grid/act',
@@ -69,10 +107,9 @@
                     }],
           "aoColumns": [
               null,
-              {"width": "120px"},
-              {"width": "120px"},
-              null,
-              null,
+              {"width": "110px"},
+              {"width": "150px"},
+              {"width": "150px"},
               null,
               null,
               null,
@@ -81,7 +118,44 @@
               {"width": "50px", "sClass":"center"},
           ]
         });
-
+        
+      oTable.yadcf([
+        {
+          column_number: 0
+        },
+        {
+          column_number: 1,
+          filter_type: "date",
+          date_format:  'yyyy-mm-dd',
+          filter_type_options:{width:"50px"}
+        },
+        {
+          column_number: 2,
+          filter_type: "text",
+          filter_delay: 500
+        },
+        {
+          column_number: 3,
+          filter_type: "text",
+          filter_delay: 500
+        },
+        {
+          column_number: 4,
+          filter_type: "text",
+          filter_delay: 500
+        }
+        ], 'footer');
+         
+        //yadcf.exFilterColumn(oTable, [[0, "Trident"]]);
+    
+        //new FixedHeader( oTable, { "bottom": true } );
+        /*oTable.columnFilter({aoColumns: [ null,{ type:  "text"},{ type: "select", values: [ 'Power on Server']  },
+                                     { type: "select", values: [ 'Complete','Failed','Incomplete'] },
+                                     { type:  "text"},{ type: "text" },{ type: "text" }
+                                ]
+ 
+                        });
+          */              
         var tb_array = [
           '<div class="btn-group pull-left">',
           '	<!--button id="btn_add"    class="btn btn btn-primary" type="button">Tambah</button>',
@@ -89,12 +163,12 @@
           '	<button id="btn_delete" class="btn btn btn-danger"  type="button">Cancel</button>',
           '	<button id="btn_close"  class="btn btn btn-warning" type="button">Tutup</button>',
           '	<button id="btn_csv"  class="btn btn btn-primary" type="button">CSV</button>',
-          '	<label>&nbsp; Tanggal: <input type="date" id="dt_filter"  class="input-sm"></label>',
           '	&nbsp;',
           '</div>',
         ];
 
-
+       //'	<label>&nbsp; Tanggal: <input type="date" id="dt_filter"  class="input-sm"></label>',
+          
         var tb = tb_array.join(' ');
         $("div.toolbar").html(tb);
         $("div.toolbar").attr('style', 'display:block; float: left; margin-bottom:6px; line-height:16px;');
@@ -129,7 +203,10 @@
         });
 
         $('#btn_csv').click(function () {
-            window.location = oTableUrl+'csv?tgl='+$("#dt_filter").val();
+            window.location = oTableUrl+'csv?tgl='+$("#yadcf-filter--table1-1").val()+
+                              '&recv='+$("#yadcf-filter--table1-2").val()+
+                              '&sender='+$("#yadcf-filter--table1-3").val()+
+                              '&cmd='+$("#yadcf-filter--table1-4").val();
 			  });
 
         $("#btn_close").click(function () {
@@ -137,7 +214,7 @@
             return false;
         });
         
-        $("#dt_filter").pickadate(
+       /* $("#dt_filter").pickadate(
             { "selectMonths": true, 
               "submitFormat": "yyyy-mm-dd", 
               "selectYears": true, 
@@ -147,7 +224,7 @@
             val = $("#dt_filter").val();
             $("input[type='search']").val( val );
             oTable.fnFilter( val );
-            });
+            });*/
         })
     </script>
 </div>

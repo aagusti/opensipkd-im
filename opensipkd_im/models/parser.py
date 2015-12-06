@@ -38,6 +38,7 @@ class SmsParsed(Base, DefaultModel):
     field01 = Column(DateTime(True),
                          nullable=False,
                          server_default=func.current_timestamp())  
+    field00 = Column(String(160)) #receiver
     field02 = Column(String(160)) #sender
     field03 = Column(String(160)) #cmd
     field04 = Column(String(160))
