@@ -1,0 +1,45 @@
+<html metal:use-macro="load: ../../../templates/base.pt">
+
+<div metal:fill-slot="content">
+<h3>Agent</h3>
+
+<a href="/imgw/agent/add">Tambah modem</a>
+
+<table class="table table-striped table-hover" tal:condition="count">
+    <thead>
+        <tr>
+            <th>No.</th>
+            <th>ID</th>
+            <th>Status</th>
+            <th>Keterangan</th>
+            <th>Job</th>
+            <th>Startup</th>
+            <th/>
+            <th/>
+        </tr>
+    </thead>
+    <tbody>
+        <tr tal:repeat="row rows">
+            <td>${repeat.row.number}</td>
+            <td>${row.id} ${row.jalur_ref.nama}
+                <span tal:condition="row.modem"><br/>${row.modem.msisdn}</span></td>
+            <td>${row.status_ref.ket}
+                <span tal:condition="row.modem"><br/>${row.modem.signal} %</span></td>
+            <td tal:condition="row.modem"><span tal:condition="row.modem.pulsa">${row.modem.pulsa.request}
+                ${row.modem.pulsa.tgl and row.modem.pulsa.tgl_tz().strftime('%d-%m-%Y %H:%M')}
+                ${row.modem.pulsa.response or ''}<br/></span>
+                <span tal:condition="row.modem.reply_for">Pengirim SMS untuk</span>
+                <span tal:repeat="mp row.modem.reply_for">${mp.produk}</span>
+                <span tal:condition="row.ket"><br/>${row.ket}</span></td>
+            <td tal:condition="not row.modem"><span tal:condition="row.ket">${row.ket}</span></td>
+            <td>${row.lastjob_tz().strftime('%d-%m-%Y %H:%M:%S')}</td>
+            <td>${row.startup_tz().strftime('%d-%m-%Y %H:%M:%S')}</td>
+            <td><a href="/imgw/agent/${row.id}/edit">Ubah<br/></a>
+                <a href="/imgw/agent/${row.id}/delete">Hapus</a></td>
+        </tr>
+    </tbody>
+</table>
+
+</div>
+
+</html>

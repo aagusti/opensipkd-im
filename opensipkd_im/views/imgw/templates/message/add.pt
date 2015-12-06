@@ -1,0 +1,5 @@
+<html metal:use-macro="load: ../../../templates/base.pt">
+<div metal:fill-slot="content">
+<div tal:content="structure form"/>
+</div>
+</html>

@@ -1,0 +1,6 @@
+<html metal:use-macro="load: ../../../templates/base.pt">
+<div metal:fill-slot="content">
+<h3>Ubah agent</h3>
+<div tal:content="structure form"/>
+</div>
+</html>

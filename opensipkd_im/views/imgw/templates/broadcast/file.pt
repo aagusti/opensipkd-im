@@ -1,0 +1,11 @@
+<html metal:use-macro="load: ../../../templates/base.pt">
+
+<div metal:fill-slot="content">
+<h3>Unggah Broadcast</h3>
+
+<div tal:content="structure form"/>
+
+<a href="/files/ContohBroadcast.csv">Unduh contoh file</a>
+
+</div>
+</html>

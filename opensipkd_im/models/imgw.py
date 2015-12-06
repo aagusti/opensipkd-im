@@ -11,7 +11,8 @@ from sqlalchemy import (
     Date,
     ForeignKey,
     UniqueConstraint,
-    Sequence
+    Sequence,
+    func
     )
 from sqlalchemy.orm import relationship
 from . import (
@@ -257,3 +258,36 @@ class MailFiles(Base, CommonModel):
     urutan   = Column(Integer,    nullable=False)
     filename = Column(String(64), nullable=False, primary_key=True)
     content  = Column(Text,       nullable=False)
+
+
+########################
+# File                 #
+# Untuk Upload         #
+########################
+class Files(Base, DefaultModel):
+    __tablename__ = 'files'
+    created     = Column(DateTime(True),
+                         nullable=False,
+                         server_default=func.current_timestamp())    
+    path        = Column(String(256), nullable=False, unique=True)
+    name        = Column(String(256), nullable=False) # original filename
+    mime        = Column(String(256), nullable=False) # file type
+    size        = Column(Integer,     nullable=False) # byte
+    user_id     = Column(Integer,     ForeignKey('users.id'))
+    description = Column(String(256))
+
+    def fullpath(self):
+        settings = get_settings()
+        dir_path = os.path.realpath(settings['static_files'])         
+        return os.path.join(dir_path, self.path)
+        
+
+class Cron(Base, DefaultModel):
+    __tablename__ = 'cron'
+    created = Column(DateTime(True),
+                     nullable=False,
+                     server_default=func.current_timestamp())
+    job     = Column(String(256), nullable=False) # contoh: invoice_file 1
+    user_id = Column(Integer,     ForeignKey('users.id'))    
+          
+        

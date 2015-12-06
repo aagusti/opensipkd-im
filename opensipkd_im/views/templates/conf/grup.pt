@@ -1,0 +1,32 @@
+<html metal:use-macro="load: ../base.pt">
+
+<div metal:fill-slot="content">
+<h1>Konfigurasi ${request.matchdict['grup']}</h1>
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>No.</th>
+            <th>Nama</th>
+            <th>Nilai</th>
+            <th>Keterangan</th>
+            <th/>
+            <th/>
+        </tr>
+    </thead>
+    <tbody>
+        <tr tal:repeat="row rows">
+            <td>${repeat.row.number}</td>
+            <td>${row.nama}</td>
+            <td>${row.nilai}</td>
+            <td>${row.ket}</td>
+            <td><a href="/conf/${quote(request.matchdict['grup'])}/${quote(row.nama)}/edit">Ubah<br/></a></td>
+            <td><a href="/conf/${quote(request.matchdict['grup'])}/${quote(row.nama)}/delete">Hapus<br/></a></td>            
+        </tr>
+    </tbody>
+</table>
+
+<a href="/conf/add?grup=${quote_plus(request.matchdict['grup'])}">Tambah konfigurasi</a>
+
+</div>
+
+</html>

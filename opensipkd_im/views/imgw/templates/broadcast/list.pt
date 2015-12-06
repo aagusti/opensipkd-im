@@ -1,0 +1,84 @@
+<html metal:use-macro="load: ../../../templates/base.pt">
+
+<div metal:fill-slot="content">
+<h3>Broadcast</h3>
+
+<form method="post" action="/imgw/broadcast">
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Awal</th>
+            <th>Akhir</th>
+            <th>Judul</th>
+            <th/>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                <input id="awal"
+                       name="awal"
+                       value="${request.GET.get('awal')}"
+                       class="form-control">
+            </td>
+            <td>
+                <input id="akhir"
+                       name="akhir"
+                       value="${request.GET.get('akhir')}"
+                       class="form-control">
+            </td>
+            <td>
+                <input id="judul"
+                       name="judul"
+                       value="${request.GET.get('judul')}"
+                       class="form-control">
+            </td>
+            <td>
+                <input type="submit"
+                       name="lihat"
+                       value="Lihat"
+                       class="btn btn-primary">
+            </td>
+        </tr>
+    </tbody>
+</table>
+</form>
+
+<div tal:condition="request.GET.get('lihat')">
+<div tal:condition="not count">
+<div class="alert alert-danger">Tidak ada hasil.</div>
+</div>
+
+<div tal:condition="count">
+<div class="alert alert-success">Ada ${count} hasil.</div>
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Waktu Catat</th>
+            <th>Jumlah Penerima</th>
+            <th>Oleh</th>
+            <th/>
+        </tr>
+    </thead>
+    <tbody>
+        <tr tal:repeat="row rows">
+            <td>${row.id}</td>
+            <td>${row.tgl_tz().strftime('%d-%m-%Y %H:%M:%S')}</td>
+            <td>${row.jml}</td>
+            <td>${row.admin}</td>
+            <td><a href="/imgw/broadcast/${row.id}/penerima">Penerima</a></td>
+        </tr>
+    </tbody>
+</table>
+
+<center>
+${rows.pager(format='$link_previous ~2~ $link_next')}
+</center>
+</div><!-- condition count -->
+</div><!-- condition lihat -->
+
+<a href="/imgw/broadcast/file" class="btn">Kirim broadcast</a>
+</div>
+
+</html>

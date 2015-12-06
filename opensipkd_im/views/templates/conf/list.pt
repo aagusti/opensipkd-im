@@ -1,0 +1,28 @@
+<html metal:use-macro="load: ../base.pt">
+
+<div metal:fill-slot="content">
+<h1>Konfigurasi</h1>
+<table class="table table-striped table-hover" tal:condition="count">
+    <thead>
+        <tr>
+            <th>No.</th>
+            <th>Grup</th>
+            <th/>
+            <th/>
+        </tr>
+    </thead>
+    <tbody>
+        <tr tal:repeat="row rows">
+            <td>${repeat.row.number}</td>
+            <td>${row.grup}</td>
+            <td><a href="/conf/${quote(row[0])}/grup">Lihat<br/></a></td>            
+            <td><a href="/conf/add?${urlencode(dict(grup=row[0]))}">Tambah<br/></a></td>
+        </tr>
+    </tbody>
+</table>
+
+<a href="/conf/add">Tambah konfigurasi</a>
+
+</div>
+
+</html>

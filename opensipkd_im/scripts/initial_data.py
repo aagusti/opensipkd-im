@@ -8,6 +8,7 @@ from sqlalchemy import (
 from data.user import UserData
 from data.routes import RouteData
 from data.parsers import ParserData
+from data.imgws import ImgwData
 
 from DbTools import (
     get_pkeys,
@@ -27,6 +28,7 @@ fixtures = [
     ('users', UserData),
     ('routes', RouteData),
     ('routes', ParserData),
+    ('routes', ImgwData),
     ]
 
 def insert():
