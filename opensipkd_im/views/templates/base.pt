@@ -47,7 +47,7 @@
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Modem <b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <li><a href="/imgw/agent">Agent</a></li>
-                <li><a href="/imgw/conf">Konfigurasi</a></li>
+                <li><a href="/conf">Konfigurasi</a></li>
               </ul>
             </li>
 

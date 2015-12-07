@@ -51,3 +51,8 @@ id,kode,path,nama
 50,"rekening-add","/rekening/add","Tambah Rekening"
 51,"rekening-edit","/rekening/{id}/edit","Edit Rekening"
 52,"rekening-delete","/rekening/{id}/delete","Hapus Rekening"
+53,conf,/conf,Konfigurasi
+54,conf-add,/conf/add,"Tambah konfigurasi"
+55,conf-grup,/conf/{grup}/grup,"Lihat grup konfigurasi"
+56,conf-edit,/conf/{grup}/{nama}/edit,"Ubah konfigurasi"
+57,conf-delete,/conf/{grup}/{nama}/delete,"Hapus konfigurasi"

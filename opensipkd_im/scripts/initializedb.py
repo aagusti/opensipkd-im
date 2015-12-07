@@ -18,9 +18,8 @@ from ..models import (
     Base,
     )
 
-#from ..models.reklame import *	
 from ..models.parser import *
-    
+
 import initial_data
 from tools import mkdir
 

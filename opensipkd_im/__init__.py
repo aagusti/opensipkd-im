@@ -12,7 +12,6 @@ from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
-#from pyramid.security import has_permission
 from pyramid.events import subscriber
 from pyramid.events import BeforeRender
 from pyramid.interfaces import IRoutesMapper
