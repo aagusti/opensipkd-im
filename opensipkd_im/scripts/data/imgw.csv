@@ -2,7 +2,7 @@ id,kode,path,nama
 201,"imgw-message","/imgw/message","IM-Message"
 213,"imgw-message-act","/imgw/message/{act}/act","IM-Message List"
 202,"imgw-message-add","/imgw/message/add","IM-Message Add"
-203,"imgw-message-resend","/imgw/message/resend","IM-Message Resend"
+203,"imgw-message-resend","/imgw/message/{id}/resend","IM-Message Resend"
 204,"imgw-broadcast","/imgw/broadcast","IM-Broadcast"
 214,"imgw-broadcast-act","/imgw/broadcast/{act}/act","IM-Broadcast List"
 205,"imgw-broadcast-penerima","/imgw/broadcast/penerima","IM-Broadcast Receiver"

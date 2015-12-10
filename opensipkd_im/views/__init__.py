@@ -30,6 +30,9 @@ from ..models import (
 def view_home(request):
     return dict(project='OpenSIPKD-IM')
 
+@view_config(route_name='home-auth', renderer='templates/home.pt', permission='view')
+def view_home_auth(request):
+    return dict(project='OpenSIPKD-IM')
 
 #########
 # Login #

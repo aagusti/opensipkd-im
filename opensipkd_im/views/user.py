@@ -285,6 +285,6 @@ def view_delete(request):
             DBSession.flush()
             
         return route_list(request)
-    return dict(rows,
+    return dict(rows=rows,
                  form=form.render())
 
