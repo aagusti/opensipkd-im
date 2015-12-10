@@ -335,7 +335,8 @@ def save_resend(row, request):
     outbox.kirim = row.kirim
     outbox.parser = row.parser
     if request.POST['pengirim']:
-        outbox.pengirim = request.POST['pengirim']
+        jalur, pengirim = request.POST['pengirim'].split()
+        outbox.pengirim = pengirim
     DBSession.add(outbox)
     row.status = 4
     DBSession.add(row)

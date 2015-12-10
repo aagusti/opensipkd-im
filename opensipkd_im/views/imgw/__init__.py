@@ -1,6 +1,7 @@
 import re
 import time
-from uuid import uuid4
+import socket
+import xmlrpclib
 from sqlalchemy import (
     or_,
     not_,
@@ -23,7 +24,11 @@ from ...models.imgw import (
     SmsOutbox,
     IpMsisdn,
     ImAntrian,
+    Conf,
+    Modem,
+    Pulsa,
     )
+from ...models.parser import MraConf
 from ...tools import (
     get_msisdn,
     dict_to_str,
@@ -49,6 +54,11 @@ def view_list(request):
 SESS_ADD_FAILED = 'imgw agent add failed'
 SESS_EDIT_FAILED = 'imgw agent edit failed'
 
+DB_DRIVER = [ ('postgresql', 'PostgreSQL'),
+              ('mysql', 'MySQL'),
+              ('mssql+pyodbc', 'MS SQL Server'),
+              ('sqlite', 'SQLite') ]
+
 def session_failed(request, session_name):
     r = dict(form=request.session[session_name])
     del request.session[session_name]
@@ -64,6 +74,7 @@ def get_agent_form(request, class_form):
     schema = class_form()
     #schema = class_form(validator=form_validator)
     #schema = schema.bind(daftar_operator=daftar_operator())
+    schema = schema.bind(daftar_db_driver=DB_DRIVER)
     schema.request = request
     return Form(schema, buttons=('save', 'cancel'))   
     
@@ -73,15 +84,23 @@ def save_agent(values, user, row=None):
         row = Agent()
         row.id = msisdn
         row.jalur = 1 # Modem
+    if not values['url']:
+        values['url'] = None
     row.from_dict(values)
     DBSession.add(row)
+    DBSession.flush()
     if 'msisdn' in values:
         modem = DBSession.query(Modem).filter_by(imei=row.id).first()
-        if not modem:
+        if modem:
+            q_pulsa = DBSession.query(Pulsa).filter_by(msisdn=modem.msisdn)
+            pulsa = q_pulsa.first()
+        else:
             modem = Modem()
             modem.imei = row.id
+            pulsa = None
         modem.msisdn = msisdn
         DBSession.add(modem)
+        DBSession.flush()
         terdaftar = []
         base_q = DBSession.query(ModemPengirim).\
                     filter_by(msisdn=values['msisdn'])
@@ -101,7 +120,15 @@ def save_agent(values, user, row=None):
                 base_q.filter_by(produk=r.produk).delete()
         else:
             base_q.delete()
-    DBSession.flush()
+        if 'cek_pulsa' in values:            
+            if not pulsa:
+                pulsa = Pulsa()
+                pulsa.msisdn = values['msisdn']
+            pulsa.request = values['cek_pulsa']
+            DBSession.add(pulsa)
+            DBSession.flush()                
+        elif pulsa:
+            DBSession.query(Pulsa).filter_by(msisdn=modem.msisdn).delete()
     return row
         
 def save_request(values, request, row=None):
@@ -137,15 +164,20 @@ class EditSchema(colander.Schema):
             description='URL im-agent atau im-gw forwarder')
                         
     
+@colander.deferred
+def db_driver_widget(node, kw):
+    values = kw.get('daftar_db_driver', kw)
+    return widget.SelectWidget(values=values)
+    
+    
 class AddModemSchema(colander.Schema):
     msisdn = colander.SchemaNode(colander.String(),
                 title='MSISDN',
                 description='Nomor HP SIM card')
-    url = colander.SchemaNode(colander.String(),
-            missing=colander.drop,
-            title='URL',
-            default='http://127.0.0.1:6543/rpc-imgw',
-            description='URL im-agent, im-gw forwarder, atau XMLRPC server lainnya')            
+    cek_pulsa = colander.SchemaNode(colander.String(),
+                    missing=colander.drop,
+                    title='Cek pulsa',
+                    contoh='*123#')
     pengirim_sms = colander.SchemaNode(colander.String(),
                     missing=colander.drop,
                     title='Pengirim SMS untuk',
@@ -158,8 +190,48 @@ class AddModemSchema(colander.Schema):
     ket = colander.SchemaNode(colander.String(),
             missing=colander.drop,
             title='Keterangan',
-            description='Informasi tambahan, misalnya: Ada di Android milik Eko')
-
+            description='Informasi tambahan, misalnya: Ada di Android '\
+                        'milik Eko.')
+    url = colander.SchemaNode(colander.String(),
+            missing=colander.drop,
+            title='URL',
+            default='http://127.0.0.1:6543/rpc-imgw',
+            description='URL im-agent, im-gw forwarder, atau XMLRPC server '\
+                        'lainnya')
+    radio = colander.SchemaNode(colander.String(),
+                missing=colander.drop,
+                title='Untuk radio',
+                contoh='Nama radio. Kosongkan jika tidak ingin diteruskan ke '\
+                       'database lain.')
+    db_driver = colander.SchemaNode(colander.String(),
+                missing=colander.drop,
+                widget=db_driver_widget,
+                title='Database driver',
+                description='Database driver yang didukung SqlAlchemy')
+    db_name = colander.SchemaNode(colander.String(),
+                missing=colander.drop,
+                title='Database name',
+                description='Nama database')
+    db_user = colander.SchemaNode(colander.String(),
+                missing=colander.drop,
+                title='Database user',
+                description='Database username')
+    db_pass = colander.SchemaNode(colander.String(),
+                missing=colander.drop,
+                widget=widget.PasswordWidget(),
+                title='Database password',
+                description='Sengaja tidak ditampilkan untuk keamanan. '\
+                        'Jika kosong maka tidak diubah.')
+    db_host = colander.SchemaNode(colander.String(),
+                missing=colander.drop,
+                title='Database host',
+                description='IP database server')
+    db_port = colander.SchemaNode(colander.String(),
+                missing=colander.drop,
+                title='Database port',
+                description='Database network port. Kosongkan untuk nilai'\
+                            'default')
+                            
 
 class EditModemSchema(AddModemSchema):
     id = colander.SchemaNode(colander.String(),
@@ -234,6 +306,18 @@ def view_edit(request):
             pengirim_sms.append(mp.produk)
         pengirim_sms.sort()
         values['pengirim_sms'] = ' '.join(pengirim_sms)
+        if row.modem.pulsa:
+            values['cek_pulsa'] = row.modem.pulsa.request
+    q_mra_conf = DBSession.query(MraConf).filter_by(agent_id=row.id)
+    mra_conf = q_mra_conf.first()
+    if mra_conf:
+        values['radio'] = mra_conf.radio
+        db = mra_conf.get_db_info()
+        values['db_driver'] = db['driver']
+        values['db_user'] = db['user']
+        values['db_host'] = db['host']
+        values['db_port'] = db['port']
+        values['db_name'] = db['name']        
     values = dict_to_str(values)
     return dict(form=form.render(appstruct=values))
     
@@ -259,6 +343,112 @@ def view_agent_delete(request):
         return route_list(request)
     return dict(row=row,
                  form=form.render())
+                 
+###########
+# Restart #
+###########
+@view_config(route_name='imgw-agent-restart',
+             permission='imgw-agent')                 
+def agent_restart(request):
+    agent_id = request.matchdict['id']
+    url = agent_url(agent_id)
+    p = dict(id = agent_id)
+    msg = 'XMLRPC request to {url} method restart parameters {p}.'.format(url=url,
+            p=p)
+    remote = xmlrpclib.ServerProxy(url)
+    try:
+        r = remote.restart(p)
+        msg = '{s} Response {r}'.format(s=msg, r=r)
+        request.session.flash(msg)
+    except socket.error, err:
+        msg = '{s} Response {r}'.format(s=msg, r=err)
+        request.session.flash(msg, 'error')
+    return HTTPFound('/imgw/agent')
+    
+@view_config(route_name='imgw-agent-restart-all',
+             permission='imgw-agent')                     
+def agent_restart_all(request):
+    q = DBSession.query(Agent).distinct(Agent.url)
+    for row in q:
+        if row.url:
+            url = row.url
+        else:
+            url = agent_default_url()
+        p = dict(id='all')
+        msg = 'XMLRPC request to {url} method restart parameters {p}.'.format(
+                url=url, p=p)
+        remote = xmlrpclib.ServerProxy(url)
+        try:
+            r = remote.restart(p)
+            msg = '{s} Response {r}'.format(s=msg, r=r)
+            request.session.flash(msg)
+        except socket.error, err:
+            msg = '{s} Response {r}'.format(s=msg, r=err)
+            request.session.flash(msg, 'error')
+    return HTTPFound('/imgw/agent')                
+
+def agent_url(agent_id):
+    q = DBSession.query(Agent).filter_by(id=agent_id)
+    agent = q.first()
+    # Agent terpisah dengan im-gw ?
+    if agent.url:
+        return agent.url
+    # Web server beda host dengan im-gw ?
+    key = 'url ' + agent.id
+    q = DBSession.query(Conf).filter_by(grup='im gw', nama=key)
+    row = q.first()
+    if row:
+        return row.nilai
+    return agent_default_url()
+
+def agent_default_url():
+    q = DBSession.query(Conf).filter_by(grup='im gw', nama='url')
+    row = q.first()
+    if row:
+        return row.nilai
+    q = DBSession.query(Conf).filter_by(grup='im gw', nama='result port')
+    row = q.first()
+    if row:
+        port = int(row.nilai)
+    else:
+        port = 9317
+    return 'http://127.0.0.1:%d' % port
+    
+#############    
+# Cek pulsa #
+#############
+@view_config(route_name='imgw-agent-cek-pulsa',
+             permission='imgw-agent')
+def modem_cek_pulsa(request):
+    agent_id = request.matchdict['id']
+    q = DBSession.query(Modem).filter_by(imei=agent_id)
+    modem = q.first()
+    q = DBSession.query(Pulsa).filter_by(msisdn=modem.msisdn)
+    pulsa = q.first()
+    # *123#   -> USSD
+    # 999 cek -> SMS
+    t = pulsa.request.split()
+    try:
+        penerima = int(t[0])
+    except ValueError:
+        penerima = None
+    if penerima: # SMS
+        penerima = t[0]
+        pesan = ' '.join(t[1:])
+        msg = '{msisdn} kirim SMS ke {penerima} dengan pesan: {pesan}'.format(
+                msisdn=modem.msisdn, penerima=penerima, pesan=pesan)
+    else:
+        pesan = pulsa.request
+        msg = '{msisdn} kirim USSD berisi pesan: {pesan}'.format(
+                msisdn=modem.msisdn, pesan=pesan)
+    a = ImAntrian(jalur=1, pengirim=modem.msisdn, pesan=pesan)
+    if penerima:
+        a.penerima = penerima
+    DBSession.add(a)
+    DBSession.flush()
+    request.session.flash(msg)
+    return HTTPFound('/imgw/agent')                 
+    
 
 ###################################################
 # Dipanggil oleh aplikasi Android bernama SMSSync #
@@ -328,9 +518,6 @@ def smssync_outbox(request):
     q = DBSession.query(SmsOutbox).order_by('id').limit(6)
     messages = []
     for row in q:
-        #msg_id = str(uuid4())
-        #message = dict(to=row.penerima, message=row.pesan,
-        #               message_uuid=msg_id)
         message = dict(to=row.penerima, message=row.pesan)
         messages.append(message)
         DBSession.query(SmsOutbox).filter_by(id=row.id).delete()        

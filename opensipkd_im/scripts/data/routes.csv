@@ -56,3 +56,6 @@ id,kode,path,nama
 55,conf-grup,/conf/{grup}/grup,"Lihat grup konfigurasi"
 56,conf-edit,/conf/{grup}/{nama}/edit,"Ubah konfigurasi"
 57,conf-delete,/conf/{grup}/{nama}/delete,"Hapus konfigurasi"
+58,imgw-agent-restart,/imgw/agent/{id}/restart,"Restart agent"
+59,imgw-agent-cek-pulsa,/imgw/agent/{id}/cek-pulsa,"Cek pulsa"
+60,imgw-agent-restart-all,/imgw/agent/restart-all,"Restart all agent"

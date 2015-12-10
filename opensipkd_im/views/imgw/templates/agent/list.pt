@@ -13,7 +13,7 @@
             <th>Status</th>
             <th>Keterangan</th>
             <th>Job</th>
-            <th>Startup</th>
+            <th><a href="/imgw/agent/restart-all">Startup</a></th>
             <th/>
             <th/>
         </tr>
@@ -23,23 +23,37 @@
             <td>${repeat.row.number}</td>
             <td>${row.id} ${row.jalur_ref.nama}
                 <span tal:condition="row.modem"><br/>${row.modem.msisdn}</span></td>
-            <td>${row.status_ref.ket}
+            <td class="${row.status < 0 and 'off' or 'on'}">${row.status_ref.ket}
                 <span tal:condition="row.modem"><br/>${row.modem.signal} %</span></td>
-            <td tal:condition="row.modem"><span tal:condition="row.modem.pulsa">${row.modem.pulsa.request}
-                ${row.modem.pulsa.tgl and row.modem.pulsa.tgl_tz().strftime('%d-%m-%Y %H:%M')}
-                ${row.modem.pulsa.response or ''}<br/></span>
+            <td tal:condition="row.modem">
+                <span tal:condition="row.modem.pulsa">
+                    <a href="/imgw/agent/${row.id}/cek-pulsa">${row.modem.pulsa.request}</a>
+                    <span class="${row.modem.pulsa.tgl and row.modem.pulsa.tgl.date() == now().date() and 'on' or 'off'}">
+                        ${row.modem.pulsa.tgl and row.modem.pulsa.tgl_tz().strftime('%d-%m-%Y %H:%M')}</span>
+                    ${row.modem.pulsa.response or ''}<br/></span>
                 <span tal:condition="row.modem.reply_for">Pengirim SMS untuk</span>
                 <span tal:repeat="mp row.modem.reply_for">${mp.produk}</span>
                 <span tal:condition="row.ket"><br/>${row.ket}</span></td>
             <td tal:condition="not row.modem"><span tal:condition="row.ket">${row.ket}</span></td>
-            <td>${row.lastjob_tz().strftime('%d-%m-%Y %H:%M:%S')}</td>
-            <td>${row.startup_tz().strftime('%d-%m-%Y %H:%M:%S')}</td>
+            <td class="${row.is_new_lastjob() and 'on' or 'off'}">${row.job and 'Ada {n}'.format(n=row.job) or 'Tidak ada'}<br/>
+                ${row.lastjob_tz().strftime('%d-%m-%Y %H:%M:%S')}</td>
+            <td class="${row.is_new_startup() and 'on' or ''}">${row.startup_tz().strftime('%d-%m-%Y %H:%M:%S')}<br/>
+                <a href="/imgw/agent/${row.id}/restart">
+                    <blink tal:condition="row.is_timeout()">Need Restart</blink>
+                    <span tal:condition="not row.is_timeout()">Restart</span></a></td>
             <td><a href="/imgw/agent/${row.id}/edit">Ubah<br/></a>
                 <a href="/imgw/agent/${row.id}/delete">Hapus</a></td>
         </tr>
     </tbody>
 </table>
 
-</div>
+<script type="text/javascript">
+  setInterval(function(){
+      $('blink').each(function(){
+        $(this).css('visibility' , $(this).css('visibility') === 'hidden' ? '' : 'hidden')
+      });
+    }, 250);
+</script>
 
+</div>
 </html>

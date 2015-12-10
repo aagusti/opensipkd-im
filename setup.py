@@ -27,6 +27,8 @@ requires=['pyramid >= 1.5.6, < 1.6a',
           'pyJasper',
           'sqlalchemy-datatables == 0.1.6',
           'simplejson',
+          'xlrd',
+          'pyramid_xmlrpc',
          ]
 
 if sys.argv[1:] and sys.argv[1] == 'develop-use-pip':

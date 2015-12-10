@@ -8,6 +8,10 @@ from urllib import (
     quote,
     quote_plus,
     )    
+from datetime import (
+    datetime,
+    timedelta,
+    )
 from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -67,8 +71,6 @@ class RemoveSlashNotFoundViewFactory(object):
     
 # https://groups.google.com/forum/#!topic/pylons-discuss/QIj4G82j04c
 def has_permission_(request, permission):
-    print request, permission
-    print '-----------------------------------------'
     return has_permission(permission, request.context, request)
 
 @subscriber(BeforeRender)
@@ -82,6 +84,8 @@ def add_global(event):
      event['thousand'] = thousand
      event['as_timezone'] = as_timezone
      event['split'] = split
+     event['now'] = datetime.now
+     event['timedelta'] = timedelta
 
 def get_title(request):
     route_name = request.matched_route.name

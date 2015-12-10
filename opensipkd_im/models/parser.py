@@ -10,16 +10,43 @@ from sqlalchemy import (
     BigInteger,
     func,
     )
+from sqlalchemy.orm import (
+    relationship,
+    backref,
+    )
 from ..tools import (
     create_now,
     get_settings,
     )
 from . import (
     Base,
+    CommonModel,
     DefaultModel,
     DBSession,
     )
-from sqlalchemy.orm import relationship, backref    
+from .tools import (
+    extract_db_url,
+    create_db_url,
+    )
+
+
+#############
+# MRA Radio #
+#############
+class MraConf(Base, CommonModel):
+    __tablename__ = 'mra_conf'
+    agent_id = Column(String(64),
+                ForeignKey('im.agent.id', ondelete='CASCADE'),
+                primary_key=True)
+    db_url = Column(String(256), nullable=False)
+    radio = Column(String(32), nullable=False)
+
+    def get_db_info(self):
+        return extract_db_url(self.db_url)
+
+    def set_db_url(self, p):
+        self.db_url = create_db_url(p)
+        
 
 class SmsCmd(Base, DefaultModel):
     __tablename__ = 'smscmd'
@@ -48,7 +75,7 @@ class SmsParsed(Base, DefaultModel):
     field08 = Column(String(160))
     field09 = Column(String(160))
     field10 = Column(String(160))
-    field11  = Column(SmallInteger) # Status Process
+    field11 = Column(SmallInteger) # Status Process
   
   
 class SmsWinner(Base, DefaultModel):
