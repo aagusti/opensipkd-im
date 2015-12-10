@@ -119,14 +119,14 @@ class Agent(Base, CommonModel):
         return self.as_timezone('startup')
         
     def is_new_startup(self):
-        return datetime.now() - self.startup < timedelta(1.0/24)
+        return create_now() - self.startup < timedelta(1.0/24)
         
     def is_new_lastjob(self):
-        return datetime.now() - self.lastjob < timedelta(1.0/24)                
+        return create_now() - self.lastjob < timedelta(1.0/24)                
         
     def is_timeout(self):
         return self.status == 0 and self.job > 0 and \
-            datetime.now() - self.lastjob > 300
+            create_now() - self.lastjob > 300
             
             
 class Modem(Base, CommonModel):

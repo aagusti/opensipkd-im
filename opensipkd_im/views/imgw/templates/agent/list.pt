@@ -22,7 +22,8 @@
         <tr tal:repeat="row rows">
             <td>${repeat.row.number}</td>
             <td>${row.id} ${row.jalur_ref.nama}
-                <span tal:condition="row.modem"><br/>${row.modem.msisdn}</span></td>
+                <span tal:condition="row.modem"><br/>${row.modem.msisdn}
+                    <br/>${row.modem.device}</span></td>
             <td class="${row.status < 0 and 'off' or 'on'}">${row.status_ref.ket}
                 <span tal:condition="row.modem"><br/>${row.modem.signal} %</span></td>
             <td tal:condition="row.modem">
