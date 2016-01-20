@@ -42,8 +42,8 @@ if sys.argv[1:] and sys.argv[1] == 'develop-use-pip':
     sys.exit()
 
 setup(name='opensipkd_im',
-      version='0.1',
-      description='Internet Messenger',
+      version='0.1.1',
+      description='Instant Messenger',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
         "Programming Language :: Python",

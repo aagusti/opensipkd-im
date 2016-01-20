@@ -1,3 +1,9 @@
+0.1.1
+-----
+
+- Bug fixed pada hak akses menu Group.
+- Group Route Permission kini diurutkan berdasarkan Route Name dan Group Name.
+
 0.1
 ---
 

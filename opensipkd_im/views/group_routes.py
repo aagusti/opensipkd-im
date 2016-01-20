@@ -88,7 +88,8 @@ def group_routes_act(request):
         columns.append(ColumnDT('groups.group_name'))
         columns.append(ColumnDT('routes.nama'))
         columns.append(ColumnDT('routes.path'))
-        query = DBSession.query(GroupRoutePermission).join(Group).join(Route)
+        query = DBSession.query(GroupRoutePermission).join(Group).join(Route).\
+                    order_by(Route.nama, Group.group_name)
         rowTable = DataTables(req, GroupRoutePermission, query, columns)
         return rowTable.output_result()
         
@@ -133,10 +134,15 @@ def save(values, user, row=None):
     return row
     
 def save_request(request, values, row=None):
-    if 'id' in request.matchdict:
-        values['id'] = request.matchdict['id']
+    #if 'id' in request.matchdict:
+    #    values['id'] = request.matchdict['id']
+    q = DBSession.query(Group).filter_by(id=values['group_id'])
+    group = q.first()
+    q = DBSession.query(Routes).filter_by(id=values['route_id'])
+    route = q.first()
     row = save(values, request.user, row)
-    request.session.flash('Group Permission sudah disimpan.')
+    request.session.flash('Group {g} kini boleh akses menu {a}.'.format(
+        g=group.group_name, a=route.nama))
         
 def routes_list(request):
     return HTTPFound(location=request.route_url('group-routes'))

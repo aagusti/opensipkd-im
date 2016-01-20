@@ -48,7 +48,7 @@ class EditSchema(AddSchema):
 # List #
 ########    
 @view_config(route_name='group', renderer='templates/group/list.pt',
-             permission='read')
+             permission='group')
 def view_list(request):
     return dict(a={})
     
@@ -56,7 +56,7 @@ def view_list(request):
 # Action #
 ##########    
 @view_config(route_name='group-act', renderer='json',
-             permission='read')
+             permission='group-act')
 def gaji_group_act(request):
     ses = request.session
     req = request
