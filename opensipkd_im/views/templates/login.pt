@@ -50,5 +50,8 @@
     <script type="text/javascript" src="/deform_static/scripts/jquery-2.0.3.min.js"></script>
     <script type="text/javascript" src="/deform_static/scripts/bootstrap.min.js"></script>
     <script type="text/javascript" src="/deform_static/scripts/deform.js"></script>
+    <script type="text/javascript">
+    $('#username').focus();
+    </script>
   </body>
 </html>

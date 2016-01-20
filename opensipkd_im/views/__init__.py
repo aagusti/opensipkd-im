@@ -139,7 +139,7 @@ def view_password(request):
             DBSession.flush()
             transaction.commit()
             #request.session.flash('Your password has been changed.')
-            request.session.flash('Password telah berhasil dirubah.')
+            request.session.flash('Password telah berhasil diubah.')
         return HTTPFound(location=request.route_url('home'))
     elif 'invalid password' in request.session:
         r = dict(form=request.session['invalid password'])

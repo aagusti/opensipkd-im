@@ -42,7 +42,7 @@ if sys.argv[1:] and sys.argv[1] == 'develop-use-pip':
     sys.exit()
 
 setup(name='opensipkd_im',
-      version='0.0',
+      version='0.1',
       description='Internet Messenger',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
@@ -65,6 +65,7 @@ setup(name='opensipkd_im',
       [paste.app_factory]
       main = opensipkd_im:main
       [console_scripts]
-      initialize_opensipkd_im_db = opensipkd_im.scripts.initializedb:main      
+      initialize_opensipkd_im_db = opensipkd_im.scripts.initializedb:main
+      reset_password = opensipkd_im.scripts.ResetPassword:main
       """,
       )

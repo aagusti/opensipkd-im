@@ -89,54 +89,77 @@ def save_agent(values, user, row=None):
     row.from_dict(values)
     DBSession.add(row)
     DBSession.flush()
-    if 'msisdn' in values:
-        modem = DBSession.query(Modem).filter_by(imei=row.id).first()
-        if modem:
-            q_pulsa = DBSession.query(Pulsa).filter_by(msisdn=modem.msisdn)
-            pulsa = q_pulsa.first()
-        else:
-            modem = Modem()
-            modem.imei = row.id
-            pulsa = None
-        modem.msisdn = msisdn
-        DBSession.add(modem)
-        DBSession.flush()
-        terdaftar = []
-        base_q = DBSession.query(ModemPengirim).\
-                    filter_by(msisdn=values['msisdn'])
-        # AS AXIS CERIA ESIA FLEXI FREN HALO HEPI IM3 MENTARI SIMPATI SMART STARONE THREE XL                    
-        for produk in values['pengirim_sms'].split():
-            produk = produk.upper()
-            terdaftar.append(produk)
-            mp = base_q.filter_by(produk=produk).first()
-            if mp:
-                continue
-            mp = ModemPengirim()
-            mp.produk = produk
-            mp.msisdn = values['msisdn']
-            DBSession.add(mp)
-        if terdaftar:
-            for r in base_q.filter(not_(ModemPengirim.produk.in_(terdaftar))):
-                base_q.filter_by(produk=r.produk).delete()
-        else:
-            base_q.delete()
-        if 'cek_pulsa' in values:            
-            if not pulsa:
-                pulsa = Pulsa()
-                pulsa.msisdn = values['msisdn']
-            pulsa.request = values['cek_pulsa']
-            DBSession.add(pulsa)
-            DBSession.flush()                
-        elif pulsa:
-            DBSession.query(Pulsa).filter_by(msisdn=modem.msisdn).delete()
+    if 'msisdn' not in values:
+        return row
+    modem = DBSession.query(Modem).filter_by(imei=row.id).first()
+    if modem:
+        q_pulsa = DBSession.query(Pulsa).filter_by(msisdn=modem.msisdn)
+        pulsa = q_pulsa.first()
+    else:
+        modem = Modem()
+        modem.imei = row.id
+        pulsa = None
+    modem.msisdn = msisdn
+    DBSession.add(modem)
+    DBSession.flush()
+    terdaftar = []
+    base_q = DBSession.query(ModemPengirim).\
+                filter_by(msisdn=values['msisdn'])
+    # AS AXIS CERIA ESIA FLEXI FREN HALO HEPI IM3 MENTARI SIMPATI SMART STARONE THREE XL                    
+    for produk in values['pengirim_sms'].split():
+        produk = produk.upper()
+        terdaftar.append(produk)
+        mp = base_q.filter_by(produk=produk).first()
+        if mp:
+            continue
+        mp = ModemPengirim()
+        mp.produk = produk
+        mp.msisdn = values['msisdn']
+        DBSession.add(mp)
+    if terdaftar:
+        for r in base_q.filter(not_(ModemPengirim.produk.in_(terdaftar))):
+            base_q.filter_by(produk=r.produk).delete()
+    else:
+        base_q.delete()
+    if 'cek_pulsa' in values:            
+        if not pulsa:
+            pulsa = Pulsa()
+            pulsa.msisdn = values['msisdn']
+        pulsa.request = values['cek_pulsa']
+        DBSession.add(pulsa)
+        DBSession.flush()                
+    elif pulsa:
+        DBSession.query(Pulsa).filter_by(msisdn=modem.msisdn).delete()
+    q_mra_conf = DBSession.query(MraConf).filter_by(agent_id=row.id)
+    mra_conf = q_mra_conf.first()
+    if not mra_conf:
+        mra_conf = MraConf()
+        mra_conf.agent_id = row.id
+    mra_conf.radio = values['radio']
+    p = dict(driver=values['db_driver'],
+             user=values['db_user'],
+             host=values['db_host'],
+             port=values['db_port'],
+             name=values['db_name'])
+    if 'db_pass' in values:
+        p['pass'] = values['db_pass']
+    elif mra_conf:
+        db = mra_conf.get_db_info()
+        if 'pass' in db:
+            p['pass'] = db['pass']
+    mra_conf.set_db_url(p)
+    DBSession.add(mra_conf)
+    DBSession.flush()
     return row
         
 def save_request(values, request, row=None):
-    if 'id' in request.matchdict:
-        values['id'] = request.matchdict['id']
     row = save_agent(values, request.user, row)
-    request.session.flash('%s %s berhasil disimpan.' % (
-        row.jalur_ref.nama.title(), row.id))
+    if row.modem:
+        agent_name = row.modem.msisdn
+    else:
+        agent_name = row.id
+    request.session.flash('{j} {n} berhasil disimpan.'.format(
+        j=row.jalur_ref.nama.title(), n=agent_name))
 
 def route_list(request):
     return HTTPFound(location=request.route_url('imgw-agent'))            
@@ -293,7 +316,7 @@ def view_edit(request):
                 request.session[SESS_EDIT_FAILED] = e.render()               
                 return HTTPFound(location=request.route_url('imgw-agent-edit',
                                   id=row.id))
-            save_agent(dict(controls), request, row)
+            save_request(dict(controls), request, row)
         return route_list(request)
     elif SESS_EDIT_FAILED in request.session:
         return session_failed(request, SESS_EDIT_FAILED)

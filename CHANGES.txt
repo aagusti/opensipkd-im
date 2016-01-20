@@ -1,3 +1,11 @@
+0.1
+---
+
+- Bug fixed database profile saat edit modem berhasil disimpan.
+- Login form auto focus di username.
+- Script bin/reset_password untuk mengubah password username tertentu dengan
+  4 digit angka acak.
+
 0.0
 ---
 
