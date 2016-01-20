@@ -1,23 +1,24 @@
 import os
-import uuid
-#from osipkd.tools import row2dict, xls_reader
 from datetime import datetime
-from sqlalchemy import not_, func
-from pyramid.view import (
-    view_config,
-    )
-from pyramid.httpexceptions import (
-    HTTPFound,
-    )
+from sqlalchemy import not_
+from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPFound
 import colander
 from deform import (
     Form,
     widget,
     ValidationFailure,
     )
-from ..models import DBSession, GroupRoutePermission, Group, Route
-from datatables import ColumnDT, DataTables
-#from osipkd.views.base_view import BaseViews
+from ..models import (
+    DBSession,
+    GroupRoutePermission,
+    Group,
+    Route,
+    )
+from datatables import (
+    ColumnDT,
+    DataTables,
+    )
     
 
 SESS_ADD_FAILED = 'Tambah routes gagal'
@@ -101,8 +102,9 @@ def group_routes_act(request):
             ses['routes_nm']=row.nama
             return {'success':True}
 
+
 #######    
-# Add #
+# Add #                
 #######
 def form_validator(form, value):
     if 'id' in form.request.matchdict:
@@ -138,7 +140,7 @@ def save_request(request, values, row=None):
     #    values['id'] = request.matchdict['id']
     q = DBSession.query(Group).filter_by(id=values['group_id'])
     group = q.first()
-    q = DBSession.query(Routes).filter_by(id=values['route_id'])
+    q = DBSession.query(Route).filter_by(id=values['route_id'])
     route = q.first()
     row = save(values, request.user, row)
     request.session.flash('Group {g} kini boleh akses menu {a}.'.format(
@@ -164,14 +166,12 @@ def view_routes_add(request):
             try:
                 c = form.validate(controls)
             except ValidationFailure, e:
-                #req.session[SESS_ADD_FAILED] = e.render()    
-                return dict(form=form)				
+                req.session[SESS_ADD_FAILED] = e.render()
                 return HTTPFound(location=req.route_url('group-routes-add'))
             save_request(request, dict(controls))
         return routes_list(request)
     elif SESS_ADD_FAILED in req.session:
-        return session_failed(request,SESS_ADD_FAILED)
-    #return dict(form=form.render())
+        return session_failed(request, SESS_ADD_FAILED)
     return dict(form=form)
 
     
@@ -179,35 +179,40 @@ def view_routes_add(request):
 # Edit #
 ########
 def query_id(request):
-    return DBSession.query(GroupRoutePermission).filter_by(group_id=request.matchdict['id'],
+    return DBSession.query(GroupRoutePermission).filter_by(
+              group_id=request.matchdict['id'],
               route_id=request.matchdict['id2'])
     
 def id_not_found(request):    
-    msg = 'Group ID %s Routes ID %s Tidak Ditemukan.' % (request.matchdict['id'], request.matchdict['id2'])
+    msg = 'Group ID %s Routes ID %s Tidak Ditemukan.' % (
+            request.matchdict['id'], request.matchdict['id2'])
     request.session.flash(msg, 'error')
     return routes_list()
 
 ##########
 # Delete #
 ##########    
-@view_config(route_name='group-routes-delete', renderer='templates/group-routes/delete.pt',
+@view_config(route_name='group-routes-delete',
+             renderer='templates/group-routes/delete.pt',
              permission='group-routes-delete')
 def view_routes_delete(request):
-    request = request
     q = query_id(request)
-    row = q.first()
-    
+    row = q.first()    
     if not row:
         return id_not_found(request)
     form = Form(colander.Schema(), buttons=('hapus','batal'))
     if request.POST:
         if 'hapus' in request.POST:
-            msg = 'Group ID %d Routes ID %d sudah dihapus.' % (row.group_id, row.route_id)
+            msg = 'Group ID %d Routes ID %d sudah dihapus.' % (row.group_id,
+                    row.route_id)
             try:
-              q.delete()
-              DBSession.flush()
+                q.delete() # Ini sudah flush
+                #DBSession.flush()
             except:
-              msg = 'Group ID %d Routes ID %d  tidak dapat dihapus.' % (row.id, row.route_id)
+                msg = 'Group ID %d Routes ID %d tidak dapat dihapus. '\
+                      'Kemungkinan masih dipakai oleh tabel lain.'
+                msg = msg % (row.id,
+                        row.route_id)
             request.session.flash(msg)
         return routes_list(request)
     return dict(row=row,

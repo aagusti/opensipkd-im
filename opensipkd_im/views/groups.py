@@ -134,25 +134,21 @@ def session_failed(request, session_name):
     return r
     
 @view_config(route_name='group-add', renderer='templates/group/add.pt',
-             permission='add')
+             permission='group-add')
 def view_group_add(request):
-    req = request
-    ses = request.session
     form = get_form(request, AddSchema)
-    if req.POST:
-        if 'simpan' in req.POST:
-            controls = req.POST.items()
+    if request.POST:
+        if 'simpan' in request.POST:
+            controls = request.POST.items()
             try:
                 c = form.validate(controls)
             except ValidationFailure, e:
-                #req.session[SESS_ADD_FAILED] = e.render()    
-                return dict(form=form)				
-                return HTTPFound(location=req.route_url('group-add'))
+                request.session[SESS_ADD_FAILED] = e.render()    
+                return HTTPFound(location=request.route_url('group-add'))
             save_request(request, dict(controls))
         return route_list(request)
-    elif SESS_ADD_FAILED in req.session:
-        return session_failed(request,SESS_ADD_FAILED)
-    #return dict(form=form.render())
+    elif SESS_ADD_FAILED in request.session:
+        return session_failed(request, SESS_ADD_FAILED)
     return dict(form=form)
 
     
@@ -168,7 +164,7 @@ def id_not_found(request):
     return route_list()
 
 @view_config(route_name='group-edit', renderer='templates/group/add.pt',
-             permission='edit')
+             permission='group-edit')
 def view_group_edit(request):
     request = request
     row = Group.query_id(request.matchdict['id']).first()
@@ -197,23 +193,24 @@ def view_group_edit(request):
 # Delete #
 ##########    
 @view_config(route_name='group-delete', renderer='templates/group/delete.pt',
-             permission='delete')
+             permission='group-delete')
 def view_group_delete(request):
     request = request
     q = Group.query_id(request.matchdict['id'])
     row = q.first()
-    
     if not row:
         return request.id_not_found(request)
     form = Form(colander.Schema(), buttons=('hapus','batal'))
     if request.POST:
         if 'hapus' in request.POST:
-            msg = 'Group ID %d %s sudah dihapus.' % (row.id, row.description)
+            msg = 'Group #%d %s sudah dihapus.' % (row.id, row.group_name)
             try:
-              q.delete()
-              DBSession.flush()
+                q.delete() # Sudah flush
+                #DBSession.flush()
             except:
-              msg = 'Group ID %d %s tidak dapat dihapus.' % (row.id, row.description)
+                msg = 'Group #%d %s tidak dapat dihapus. '\
+                      'Kemungkinan masih digunakan di tabel lain.'
+                msg = msg % (row.id, row.group_name)
             request.session.flash(msg)
         return route_list(request)
     return dict(row=row,

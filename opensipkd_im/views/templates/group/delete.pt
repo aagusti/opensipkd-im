@@ -6,7 +6,7 @@
         <h3 class="panel-title">Peringatan</h3>
     </div>
     <div class="panel-body">
-        Hapus Group  #${row.group_name} ${row.description} ?
+        Hapus Group #${row.id} ${row.group_name} ?
     </div>
 </div>
 
