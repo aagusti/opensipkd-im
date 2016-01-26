@@ -1,0 +1,31 @@
+<html metal:use-macro="load: ../../templates/base.pt">
+<div metal:fill-slot="content">
+<div  class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">${request.title}</h3>
+    </div>
+    <div class="panel-body">
+        <center><h1>Kamulah Pemenangnya</h1></center>
+        <table class="table table-striped table-hover" tal:condition="rows">
+            <thead>
+                <tr>
+                    <th>No. HP</th>
+                    <th>Kode Struk</th>
+                    <th>No. Identitas</th>
+                    <th>Gender</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr tal:repeat="row rows">
+                    <td>${row.field02}</td>
+                    <td>${row.field05}</td>
+                    <td>${row.field06}</td>
+                    <td>${row.field07}</td>
+                </tr>
+            </tbody>
+        </table>
+        <center><a href="/parse/rnd">Lihat daftarnya</a></center>
+    </div>
+</div>
+</div>
+</html>

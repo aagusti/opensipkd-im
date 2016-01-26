@@ -19,3 +19,5 @@ id,kode,path,nama
 118,"parse-rnd-approve","/parse/rnd/{id}/approve","Approve Random"
 119,"parse-msg-csv","/parse/msg/csv","CSV Report Msg Parsed"
 120,"parse-rnd-csv","/parse/rnd/csv","CSV Report Rnd Winner"
+121,"parse-rnd-animation","/parse/rnd/animation","Animation Random Message"
+122,"parse-rnd-winner","/parse/rnd/winner","Random Winner"

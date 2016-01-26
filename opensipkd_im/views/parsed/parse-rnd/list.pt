@@ -14,11 +14,11 @@
             <th>Notes 2</th>
             <th>Recv Tgl.</th>
             <th>Sender</th>
-            <th>Field 03</th>
-            <th>Field 04</th>
-            <th>Field 05</th>
-            <th>Field 06</th>
-            <th>Field 07</th>
+            <th>Cmd</th>
+            <th>Nama</th>
+            <th>Nomor Struk</th>
+            <th>Nomor Identitas</th>
+            <th>Gender</th>
             <th>Flag</th>
         </tr>
     </thead>

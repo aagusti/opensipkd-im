@@ -1,0 +1,26 @@
+<html metal:use-macro="load: ../../templates/base.pt">
+<div metal:fill-slot="content">
+<div  class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">${request.title}</h3>
+    </div>
+    <div class="panel-body">
+        <img src="/static/img/loading.gif">
+    </div>
+</div>
+<script type="text/javascript">
+    function pindah() {
+        var url = window.location.pathname +
+            '?cmd=${cmd}' +
+            '&date_from=${date_from}' +
+            '&date_to=${date_to}' +
+            '&is_winner=${is_winner}' +
+            '&choose=1';
+        window.location.replace(url);
+    };
+    $(document).ready(function() {
+        window.setTimeout(pindah, 5000);
+        });
+</script>
+</div>
+</html>

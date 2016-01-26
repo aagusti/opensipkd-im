@@ -28,7 +28,7 @@ SESS_EDIT_FAILED = 'Edit user gagal'
 # List #
 ########    
 @view_config(route_name='user-group', renderer='templates/usergroup/list.pt',
-             permission='read')
+             permission='user-group')
 def view_list(request):
     #rows = DBSession.query(User).filter(User.id > 0).order_by('email')
     return dict(project='Pajak Reklame')
@@ -37,7 +37,7 @@ def view_list(request):
 # Action #
 ##########    
 @view_config(route_name='user-group-act', renderer='json',
-             permission='read')
+             permission='user-group-act')
 def usr_group_act(request):
     ses = request.session
     req = request
@@ -160,7 +160,7 @@ def session_failed(request, session_name):
     return r
     
 @view_config(route_name='user-group-add', renderer='templates/usergroup/add.pt',
-             permission='add')
+             permission='user-group-add')
 def view_add(request):
     form = get_form(request, AddSchema)
     if request.POST:
@@ -199,7 +199,7 @@ def id_not_found(request):
     return route_list(request)
 
 @view_config(route_name='user-group-edit', renderer='templates/usergroup/edit.pt',
-             permission='edit')
+             permission='user-group-edit')
 def view_edit(request):
     row = query_id(request).first()
     if not row:
@@ -225,7 +225,7 @@ def view_edit(request):
 # Delete #
 ##########    
 @view_config(route_name='user-group-delete', renderer='templates/usergroup/delete.pt',
-             permission='delete')
+             permission='user-group-delete')
 def view_delete(request):
     q = query_id(request)
     row = q.first()

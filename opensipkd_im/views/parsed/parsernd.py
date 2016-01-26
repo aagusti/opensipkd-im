@@ -1,30 +1,29 @@
 from email.utils import parseaddr
 from sqlalchemy import not_
-from pyramid.view import (
-    view_config,
-    )
-from pyramid.httpexceptions import (
-    HTTPFound,
-    )
+from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPFound
 import colander
 from deform import (
     Form,
     widget,
     ValidationFailure,
     )
-from ...models import (
-    DBSession,
-    )
+from ...models import DBSession
+from ...models.imgw import Conf
 from ...models.parser import (
     SmsParsed,
     SmsWinner
     )
-from ...tools import dict_to_str
+from ...tools import (
+    dict_to_str,
+    date_from_str,
+    )
 from ...views.tools import _DTstrftime, _number_format
-    
 from datatables import ColumnDT, DataTables
 from datetime import date, datetime, timedelta
 from random import randrange
+
+
 SESS_ADD_FAILED = 'parse-rnd add failed'
 SESS_EDIT_FAILED = 'parse-rnd edit failed'
 
@@ -46,7 +45,6 @@ def view_act(request):
     req = request
     params = req.params
     url_dict = req.matchdict
-    
     if url_dict['act']=='grid':
         columns = []
         columns.append(ColumnDT('id'))
@@ -64,7 +62,6 @@ def view_act(request):
         query = DBSession.query(SmsWinner)
         rowTable = DataTables(req, SmsWinner, query, columns)
         return rowTable.output_result()    
-    return
     
 #######    
 # Add #
@@ -147,53 +144,77 @@ class ParSchema(colander.Schema):
                     default = False,
                     title = "Include Winner",)                
 
-def random_id(request):
-
-    controls = dict(request.POST.items())
-    if controls['date_to']:
-        controls['date_to'] = (datetime.strptime(controls['date_to'],'%Y-%m-%d')+
-                                        +timedelta(days=1)).strftime('%Y-%m-%d')
-        
+def random_id(d):
+    if d['date_to']:
+        d['date_to'] = (datetime.strptime(d['date_to'],'%Y-%m-%d')+
+                        +timedelta(days=1)).strftime('%Y-%m-%d')
     qry = DBSession.query(SmsParsed)\
-                 .filter(SmsParsed.field03==controls['cmd'].upper())
-
-                 
-    if 'is_winner' in controls and controls['is_winner']:
+                 .filter(SmsParsed.field03==d['cmd'].upper())
+    if 'is_winner' in d and d['is_winner'] == '1':
         qry = qry.filter(SmsParsed.field11<2)
     else:
         qry = qry.filter(SmsParsed.field11==0)
-        
-    if controls['date_from'] and controls['date_to']:
-        qry = qry.filter(SmsParsed.field01 >= controls['date_from'], 
-                         SmsParsed.field01 < controls['date_to'])
-    
+    if d['date_from'] and d['date_to']:
+        qry = qry.filter(SmsParsed.field01 >= d['date_from'], 
+                         SmsParsed.field01 < d['date_to'])
     count = qry.count()
-
     acak = 0
     if count:
-      acak = randrange(1, count+1)
-      
-    return qry.order_by(SmsParsed.id).limit(acak)  
-    #return DBSession.query(SmsWinner).filter_by(id=request.matchdict['id'])
-    
+        acak = randrange(count)
+        #acak = randrange(1, count+1)
+    q = qry.order_by(SmsParsed.id).offset(acak)
+    row = q.first()
+    if row:
+        return row.id
+    #return qry.order_by(SmsParsed.id).limit(acak)
+
+PARAM_GRUP = 'winner parameter'
+PARAM_KEYS = ('cmd', 'date_from', 'date_to', 'is_winner')
+
+def save_param(data, request):
+    for key in PARAM_KEYS:
+        q = DBSession.query(Conf).filter_by(grup=PARAM_GRUP, nama=key)
+        row = q.first()
+        if not row:
+            row = Conf()
+            row.grup = PARAM_GRUP 
+            row.nama = key
+        if key in data:
+            row.nilai = data[key]
+        else:
+            row.nilai = 0
+        DBSession.add(row)
+        DBSession.flush()
+              
+def get_param():
+    d = dict()
+    for key in PARAM_KEYS:
+        q = DBSession.query(Conf).filter_by(grup=PARAM_GRUP, nama=key)
+        row = q.first()
+        if row:
+            if key.find('date') > -1:
+                d[key] = date_from_str(row.nilai)
+            elif key.find('is_') == 0:
+                d[key] = row.nilai == '1'
+            else:
+                d[key] = row.nilai
+    return d
+
 @view_config(route_name='parse-rnd-par', renderer='parse-rnd/par.pt',
              permission='parse-rnd-par')
 def view_par(request):
     form = get_form(request, ParSchema)
     if request.POST:
-        if 'proses' in request.POST:
+        if 'FIXME-unused-proses' in request.POST:
             controls = request.POST.items()
             try:
                 c = form.validate(controls)
             except ValidationFailure, e:
                 request.session[SESS_ADD_FAILED] = e.render()               
                 return HTTPFound(location=request.route_url('parse-rnd-par'))
-                #return dict(form=form)
-            #save_param(dict(controls), request)
-            rows = random_id(request).all()
-            for row in rows:
-                id = row.id
-            if rows and row:
+            save_param(dict(controls), request)
+            id = random_id(controls)
+            if id:
                 controls2=dict(controls)
                 url = request.route_url('parse-rnd-add', 
                                          _query={'id' :id, 
@@ -201,93 +222,96 @@ def view_par(request):
                                                  'date_from': controls2['date_from'],
                                                  'date_to': controls2['date_to']})
                 return HTTPFound(location=url)
-            else:
-                request.session[SESS_ADD_FAILED] = form.render()  
-                request.session.flash('Tidak ditemukan Data Calon Pemenang','error')
+            request.session[SESS_ADD_FAILED] = form.render()  
+            request.session.flash('Tidak ditemukan Data Calon Pemenang','error')
+            return HTTPFound(location=request.route_url('parse-rnd-par'))
+        if 'proses' in request.POST:
+            controls = request.POST.items()
+            try:
+                c = form.validate(controls)
+            except ValidationFailure, e:
+                request.session[SESS_ADD_FAILED] = e.render()               
                 return HTTPFound(location=request.route_url('parse-rnd-par'))
-                
+            save_param(dict(controls), request)
+            controls2=dict(controls)
+            is_winner = 'is_winner' in controls2 and 1 or 0
+            url = request.route_url('parse-rnd-animation', 
+                    _query={'cmd': controls2['cmd'],
+                            'date_from': controls2['date_from'],
+                            'date_to': controls2['date_to'],
+                            'is_winner': is_winner})
+            return HTTPFound(location=url)
         return route_list(request)
-        
     elif SESS_ADD_FAILED in request.session:
         return session_failed(request, SESS_ADD_FAILED)
-    return dict(form=form.render())
-    #return dict(form=form)
+    values = get_param()
+    return dict(form=form.render(appstruct=values))
     
 class AddSchema(colander.Schema):
-    cmd = colander.SchemaNode(
-                    colander.String(),
-                    missing=colander.drop,
-                    widget=widget.HiddenWidget(readonly=True),
-                    title = "Command",)
-    date_from = colander.SchemaNode(
-                    colander.Date(),
-                    missing=colander.drop,
+    #cmd = colander.SchemaNode(
+    #                colander.String(),
+    #                missing=colander.drop,
+    #                widget=widget.HiddenWidget(readonly=True),
+    #                title = 'Command')
+    #date_from = colander.SchemaNode(
+    #                colander.Date(),
+    #                missing=colander.drop,
                     #widget=widget.HiddenWidget(readonly=True),
-                    title="Date From")
-                    
-    date_to   = colander.SchemaNode(
-                    colander.Date(),
-                    missing=colander.drop,
+    #                title="Date From")
+    #date_to   = colander.SchemaNode(
+    #                colander.Date(),
+    #                missing=colander.drop,
                     #widget=widget.HiddenWidget(readonly=True),
-                    title = "Date to",)
-                    
+    #                title = "Date to",)
     field01 = colander.SchemaNode(
                     colander.Date(),
                     missing=colander.drop,
-                    #default=datetime.now(),
-                    title = "Message Date",)
-                    
+                    title = 'Message Date',)
     field02 = colander.SchemaNode(
                     colander.String(),
                     missing=colander.drop,
-                    title = "Sender",)
-                    
+                    title = 'Sender')
     field03 = colander.SchemaNode(
                     colander.String(),
                     missing=colander.drop,
-                    title = "Cmd",)
-                    
+                    title = 'Cmd')
     field04 = colander.SchemaNode(
                     colander.String(),
                     missing=colander.drop,
-                    title = "Field 04",)
-                    
+                    title = 'Nama')
     field05 = colander.SchemaNode(
                     colander.String(),
                     missing=colander.drop,
-                    title = "Field 05",)
-                    
+                    title = 'Nomor Struk')
     field06 = colander.SchemaNode(
                     colander.String(),
                     missing=colander.drop,
-                    title = "Field 06",)
-                    
+                    title = 'Nomor Identitas')
     field07 = colander.SchemaNode(
                     colander.String(),
                     missing=colander.drop,
-                    title = "Field 07",)
-                    
-                    
+                    title = 'Gender')
     field01a = colander.SchemaNode(
                     colander.Date(),
                     default=datetime.now(),
-                    title = "Process Date",)
+                    title = 'Process Date')
     field02a = colander.SchemaNode(
                     colander.String(),
                     widget=widget.RichTextWidget(),
-                    title = "Notes 1",)
+                    title = 'Note 1')
     field03a = colander.SchemaNode(
                     colander.String(),
                     widget=widget.RichTextWidget(),
                     missing=colander.drop,
-                    title = "Notes 2",)
+                    title = 'Note 2')
                     
 class EditSchema(AddSchema):
     #id disini adalah id sms message
     #id disini adalah id sms message
     id = colander.SchemaNode(colander.String(),
             missing=colander.drop,
-            #widget=widget.HiddenWidget(readonly=True)
+            widget=widget.HiddenWidget(readonly=True),
+            title='SMS Parsed ID',
             )
             
 def get_form(request, class_form):
@@ -298,28 +322,31 @@ def get_form(request, class_form):
     
 def save(values, user, row=None):
     if not row:
-        row = SmsWinner()
         #update sms parser karena satu orang hanya boleh satu pemenang
-
         q = DBSession.query(SmsParsed)
-        q = q.filter(SmsParsed.field02== values['field02'], 
-                          SmsParsed.field03==values['field03'])
-        if values['date_to'] and values['date_from']:
-            values['date_to'] = (datetime.strptime(values['date_to'],'%Y-%m-%d')+
-                                 +timedelta(days=1)).strftime('%Y-%m-%d')
+        q = q.filter(SmsParsed.field02==values['field02'], 
+                     SmsParsed.field03==values['field03'])
+        #if 'date_to' in values and values['date_to'] and \
+        #   'date_from' in values and values['date_from']:
+        #    values['date_to'] = (datetime.strptime(values['date_to'],'%Y-%m-%d')+
+        #                         +timedelta(days=1)).strftime('%Y-%m-%d')
         #TODO: Kenapa gak bisa update kalau tanggal pram diisi                                
         #if values['date_from'] and values['date_to'] and True:
         #    q = q.filter(SmsParsed.field01 >= values['date_from'], 
         #              SmsParsed.field01 < values['date_to'])
         #print q
         q.update({"field11": 1})     
-    values_to_save = {"smsparsed_id" : values['id'],
-                      "field01" : values['field01a'],
-                      "field02" : values['field02a'],
-                      "field03" : values['field03a'],
-                      }
-                      
-    row.from_dict(values_to_save)
+        row = SmsWinner()
+        row.smsparsed_id = values['id']
+    #values_to_save = {"smsparsed_id" : values['id'],
+    #                  "field01" : values['field01a'],
+    #                  "field02" : values['field02a'],
+    #                  "field03" : values['field03a'],
+    #                  }
+    #row.from_dict(values_to_save)
+    row.field01 = values['field01a']
+    row.field02 = values['field02a']
+    row.field03 = values['field03a']
     DBSession.add(row)
     DBSession.flush()
     return row
@@ -338,30 +365,56 @@ def session_failed(request, session_name):
     del request.session[session_name]
     return r
     
+@view_config(route_name='parse-rnd-animation', renderer='parse-rnd/animation.pt',
+             permission='parse-rnd-animation')
+def view_animation(request):
+    d = dict(cmd=request.GET['cmd'],
+             date_from=request.GET['date_from'],
+             date_to=request.GET['date_to'],
+             is_winner=request.GET['is_winner'])
+    if request.GET.get('choose'):
+        id = random_id(request.GET)
+        if not id:
+            request.session[SESS_ADD_FAILED] = form.render()  
+            request.session.flash('Tidak ditemukan Data Calon Pemenang','error')
+            return HTTPFound(location=request.route_url('parse-rnd-par'))
+        #d['id'] = id
+        #url = request.route_url('parse-rnd-add', _query=d) 
+        #return HTTPFound(location=url)
+        q = DBSession.query(SmsParsed).filter_by(id=id)
+        row = q.first()
+        values = row.to_dict()
+        values['field01a'] = datetime.now()
+        values['field02a'] = values['field03a'] = None
+        #values['date_from'] = values['date_from'] and datetime.strptime(values['date_from'],'%Y-%m-%d') or None
+        #values['date_to'] = values['date_to'] and datetime.strptime(values['date_to'],'%Y-%m-%d') or None
+        save_request(values, request)
+        return HTTPFound(location=request.route_url('parse-rnd-winner'))
+    return d
+
 @view_config(route_name='parse-rnd-add', renderer='parse-rnd/add.pt',
              permission='parse-rnd-add')
 def view_add(request):
-    
-    form = get_form(request, EditSchema)
+    schema = EditSchema()
+    schema = schema.bind(daftar_status=STATUS)
+    schema.request = request
+    form = Form(schema, buttons=('simpan','batalkan'))
     if request.POST:
-        if 'proses' in request.POST:
+        if 'simpan' in request.POST:
             controls = request.POST.items()
             try:
                 c = form.validate(controls)
             except ValidationFailure, e:
                 request.session[SESS_ADD_FAILED] = e.render()               
                 return HTTPFound(location=request.route_url('parse-rnd-add'))
-                #return dict(form=form)
             save_request(dict(controls), request)
         return route_list(request)
     elif SESS_ADD_FAILED in request.session:
         return session_failed(request, SESS_ADD_FAILED)
-
     if request.POST and request.POST.items():
         controls = dict(request.POST.items())
     else:
         controls = dict(request.GET.items())
-        
     row = DBSession.query(SmsParsed).filter_by(id=controls['id']).first()
     if not row:
         return id_not_found(request)
@@ -369,11 +422,15 @@ def view_add(request):
     values.update(controls)
     values['date_from'] = values['date_from'] and datetime.strptime(values['date_from'],'%Y-%m-%d') or None
     values['date_to'] = values['date_to'] and datetime.strptime(values['date_to'],'%Y-%m-%d') or None
-    
     return dict(form=form.render(appstruct=values))
-    #return dict(form=form.render())
-    #return dict(form=form)
 
+@view_config(route_name='parse-rnd-winner', renderer='parse-rnd/winner.pt',
+             permission='parse-rnd-winner')
+def view_winner(request):
+    q = DBSession.query(SmsParsed).filter(SmsParsed.id == SmsWinner.smsparsed_id).\
+            order_by(SmsWinner.id.desc()).limit(1)
+    return dict(rows=q)
+ 
 ########
 # Edit #
 ########
@@ -391,9 +448,13 @@ def view_edit(request):
     row = query_id(request).first()
     if not row:
         return id_not_found(request)
-    form = get_form(request, EditSchema)
+    #form = get_form(request, EditSchema)
+    schema = EditSchema() 
+    schema = schema.bind(daftar_status=STATUS)
+    schema.request = request
+    form = Form(schema, buttons=('simpan','tidak jadi'))
     if request.POST:
-        if 'proses' in request.POST:
+        if 'simpan' in request.POST:
             controls = request.POST.items()
             try:
                 c = form.validate(controls)
@@ -409,11 +470,7 @@ def view_edit(request):
     values['field01a']=row.field01
     values['field02a']=row.field02
     values['field03a']=row.field03
-    
-    #values = dict_to_str(values)
     return dict(form=form.render(appstruct=values))
-    #form.set_appstruct(values)
-    #return dict(form=form)
 
 ##########
 # Delete #
