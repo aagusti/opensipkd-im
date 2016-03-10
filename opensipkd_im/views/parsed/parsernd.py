@@ -375,6 +375,7 @@ def view_animation(request):
     if request.GET.get('choose'):
         id = random_id(request.GET)
         if not id:
+            form = get_form(request, ParSchema)
             request.session[SESS_ADD_FAILED] = form.render()  
             request.session.flash('Tidak ditemukan Data Calon Pemenang','error')
             return HTTPFound(location=request.route_url('parse-rnd-par'))
