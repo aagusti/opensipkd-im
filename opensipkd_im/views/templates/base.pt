@@ -29,12 +29,12 @@
               <ul class="dropdown-menu">
                 <li><a href="/imgw/message">Pesan</a></li>
                 <li><a href="/imgw/message/add">Kirim pesan</a></li>
-                <li><a href="/imgw/broadcast">Broadcast</a></li>                
-                <li><a href="/imgw/broadcast/file">Kirim broadcast</a></li>
+                <li tal:condition="False"><a href="/imgw/broadcast">Broadcast</a></li>                
+                <li tal:condition="False"><a href="/imgw/broadcast/file">Kirim broadcast</a></li>
               </ul>
             </li>                        
 
-            <li class="dropdown" tal:attributes="class request.matched_route.name in ['imgw-parser'] and 'active'">
+            <li tal:condition="False" class="dropdown" tal:attributes="class request.matched_route.name in ['imgw-parser'] and 'active'">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Parser <b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <li><a href="/parse/cfg">Konfigurasi</a></li>

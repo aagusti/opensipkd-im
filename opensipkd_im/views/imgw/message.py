@@ -46,7 +46,6 @@ from ...tools import (
 JENIS_PESAN = [
     ('sms', 'SMS'),
     ('ussd', 'USSD'),
-    ('ym', 'YM'),
     ('xmpp', 'XMPP'),
     ('mail', 'Mail'),
     ]
