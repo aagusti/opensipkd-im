@@ -16,7 +16,6 @@ from ..models import (
     User,
     )
 from datetime import (datetime, date)
-from pyjasper.client import JasperGenerator
 
    
 def _DTstrftime(chain):

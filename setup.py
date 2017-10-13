@@ -29,6 +29,8 @@ requires=['pyramid >= 1.5.6, < 1.6a',
           'simplejson',
           'xlrd',
           'pyramid_xmlrpc',
+          'ipaddress',
+          'pyramid_exclog',
          ]
 
 if sys.argv[1:] and sys.argv[1] == 'develop-use-pip':
